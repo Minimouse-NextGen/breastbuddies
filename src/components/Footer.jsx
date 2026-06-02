@@ -1,5 +1,7 @@
 import { LogoMark, SmallIcon } from "./Graphics"
 
+const whatsappLink = "https://wa.me/917299788877?text=Hello%20BreastBuddies%2C%20I%20would%20like%20to%20book%20a%20lactation%20consultation."
+
 function Footer() {
   return (
     <footer className="border-t border-sky-900 bg-gradient-to-br from-[#1E2A52] to-[#4F8EF7] py-8 font-inter text-white lg:py-9">
@@ -27,7 +29,7 @@ function Footer() {
         <div>
           <p className="font-semibold">Connect</p>
           <div className="mt-4 space-y-3 text-sm text-sky-100">
-            <a href="https://wa.me/91XXXXXXXXXX" target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-white">
+            <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-white">
               <SmallIcon type="whatsapp" color="#22c55e" className="h-5 w-5" />
               Chat on WhatsApp
             </a>

@@ -1,5 +1,7 @@
 import { SmallIcon } from "./Graphics"
 
+const whatsappLink = "https://wa.me/917299788877?text=Hello%20BreastBuddies%2C%20I%20would%20like%20to%20book%20a%20lactation%20consultation."
+
 function Hero() {
   return (
     <section id="top" className="relative min-h-[560px] overflow-visible bg-gradient-to-br from-[#F7FCFF] via-[#EAF4FF] to-[#DFF0FF] pb-20 pt-3 lg:pt-4">
@@ -27,9 +29,9 @@ function Hero() {
               <span className="whitespace-nowrap">Book a Virtual Consultation</span>
             </a>
             <a
-              href="https://wa.me/91XXXXXXXXXX"
+              href={whatsappLink}
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               className="inline-flex min-h-[48px] w-full max-w-[220px] items-center justify-center gap-3 rounded-xl border-2 border-[#FF9BB9] bg-white px-5 py-3 text-center font-inter text-sm font-semibold leading-none text-[#FF6B9A] shadow-sm transition hover:-translate-y-0.5 hover:border-[#FF6B9A] sm:w-auto"
             >
               <SmallIcon type="whatsapp" color="#34C38F" className="h-5 w-5" />

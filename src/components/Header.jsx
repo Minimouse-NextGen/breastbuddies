@@ -8,6 +8,8 @@ const navItems = [
   { label: "Book Consultation", href: "#booking" },
 ]
 
+const whatsappLink = "https://wa.me/917299788877?text=Hello%20BreastBuddies%2C%20I%20would%20like%20to%20book%20a%20lactation%20consultation."
+
 function Header() {
   const [activeSection, setActiveSection] = useState(() => window.location.hash || "#top")
 
@@ -81,9 +83,9 @@ function Header() {
 
         <div className="flex shrink-0 items-center gap-5">
           <a
-            href="https://wa.me/91XXXXXXXXXX"
+            href={whatsappLink}
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
             className="hidden min-w-[210px] items-center justify-center gap-3 rounded-2xl border-2 border-[#34C38F]/60 bg-white px-6 py-3 font-inter text-[15px] font-semibold text-[#1E2A52] shadow-sm transition hover:-translate-y-0.5 hover:border-[#34C38F] md:flex"
           >
             <SmallIcon type="whatsapp" color="#16a974" className="h-5 w-5" />
