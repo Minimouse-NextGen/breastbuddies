@@ -1,5 +1,6 @@
 import emailjs from "@emailjs/browser"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
+import { createBooking, getUnavailableBookingSlots } from "../services/bookingsService"
 
 const modes = ["Online video call", "In-Person Consult(Hospital)"]
 const durations = ["30 minutes", "1 hour"]
@@ -20,14 +21,6 @@ const timeSlots = [
   "04:30 PM",
   "05:00 PM",
   "05:30 PM",
-]
-
-const bookedSlots = [
-  {
-    date: "2026-06-01",
-    startTime: "09:30 AM",
-    duration: 60,
-  },
 ]
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -177,9 +170,14 @@ function isSlotSelectable(slotTime, selectedDate, selectedStartTime, duration, e
     && !isSlotInsideSelectedRange(slotTime, selectedStartTime, duration)
 }
 
+function isConfiguredValue(value, placeholder) {
+  return Boolean(value && value !== placeholder)
+}
+
 function BookingForm() {
   const minDate = useMemo(() => getTodayInputValue(), [])
   const [formData, setFormData] = useState(initialFormData)
+  const [bookedSlots, setBookedSlots] = useState([])
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
   const [calendarMonth, setCalendarMonth] = useState(() => new Date())
   const [message, setMessage] = useState("")
@@ -187,6 +185,36 @@ function BookingForm() {
   const [errors, setErrors] = useState({})
   const [isSending, setIsSending] = useState(false)
   const calendarDays = useMemo(() => buildCalendarDays(calendarMonth), [calendarMonth])
+
+  useEffect(() => {
+    let isMounted = true
+
+    async function loadUnavailableSlots() {
+      if (!formData.preferredDate) {
+        setBookedSlots([])
+        return
+      }
+
+      try {
+        const slots = await getUnavailableBookingSlots(formData.preferredDate)
+        if (isMounted) {
+          setBookedSlots(slots)
+        }
+      } catch (error) {
+        if (isMounted) {
+          console.error("Unable to load booked slots", error)
+          setMessageType("error")
+          setMessage("Unable to refresh slot availability. Please try again.")
+        }
+      }
+    }
+
+    loadUnavailableSlots()
+
+    return () => {
+      isMounted = false
+    }
+  }, [formData.preferredDate])
 
   function updateField(field, value) {
     setFormData((current) => ({
@@ -275,20 +303,18 @@ function BookingForm() {
       return
     }
 
+    const durationMinutes = getDurationMinutes(formData.consultationDuration)
+    const selectedSlotRange = getTimeRange(
+      formData.preferredTimeSlot,
+      durationMinutes,
+    )
+    const selectedEndTime = getEndTime(formData.preferredTimeSlot, durationMinutes)
     const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID
     const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID
     const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY
-
-    if (!serviceId || !templateId || !publicKey) {
-      setMessageType("error")
-      setMessage("Email service is not configured yet. Please contact us through WhatsApp.")
-      return
-    }
-
-    const selectedSlotRange = getTimeRange(
-      formData.preferredTimeSlot,
-      getDurationMinutes(formData.consultationDuration),
-    )
+    const canSendEmail = isConfiguredValue(serviceId, "YOUR_SERVICE_ID")
+      && isConfiguredValue(templateId, "YOUR_TEMPLATE_ID")
+      && isConfiguredValue(publicKey, "YOUR_PUBLIC_KEY")
 
     const templateParams = {
       subject: "New Consultation Request - BreastBuddies",
@@ -340,18 +366,49 @@ BreastBuddies Website`,
 
     try {
       setIsSending(true)
-      await emailjs.send(serviceId, templateId, templateParams, { publicKey })
+      const latestBookedSlots = await getUnavailableBookingSlots(formData.preferredDate)
+      setBookedSlots(latestBookedSlots)
+
+      if (!isSlotSelectable(
+        formData.preferredTimeSlot,
+        formData.preferredDate,
+        "",
+        durationMinutes,
+        latestBookedSlots,
+      )) {
+        setMessageType("error")
+        setMessage("That time slot is no longer available. Please choose another slot.")
+        return
+      }
+
+      await createBooking({
+        ...formData,
+        startTime: formData.preferredTimeSlot,
+        endTime: selectedEndTime,
+        slotRange: selectedSlotRange,
+        durationMinutes,
+      })
+
+      if (canSendEmail) {
+        await emailjs.send(serviceId, templateId, templateParams, { publicKey })
+      }
+
       setMessageType("success")
       setMessage(
         "Thank you. Your consultation request has been received. We will contact you shortly via WhatsApp or email.",
       )
       setFormData(initialFormData)
+      setBookedSlots([])
       setErrors({})
       setIsCalendarOpen(false)
     } catch (error) {
-      console.error("EmailJS consultation request failed", error)
+      console.error("Consultation request failed", error)
       setMessageType("error")
-      setMessage("Something went wrong. Please try again or contact us through WhatsApp.")
+      setMessage(
+        error.code === "23P01"
+          ? "That time slot was just booked. Please choose another slot."
+          : "Something went wrong. Please try again or contact us through WhatsApp.",
+      )
     } finally {
       setIsSending(false)
     }

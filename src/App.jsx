@@ -1,50 +1,19 @@
 import { useEffect, useState } from "react"
+import { Navigate, Route, Routes } from "react-router-dom"
 import AboutDivya from "./components/AboutDivya"
 import BookingForm from "./components/BookingForm"
 import FloatingWhatsApp from "./components/FloatingWhatsApp"
 import Footer from "./components/Footer"
 import Header from "./components/Header"
 import Hero from "./components/Hero"
-import LaunchLanding from "./components/LaunchLanding"
 import Services from "./components/Services"
 import TrustHighlights from "./components/TrustHighlights"
+import AdminDashboard from "./pages/AdminDashboard"
+import AdminLogin from "./pages/AdminLogin"
+import { isAllowedAdminEmail } from "./services/adminAccess"
+import { isSupabaseConfigured, supabase } from "./services/supabaseClient"
 
-const launchAccessKey = "breastbuddies-launch-entered-v2"
-const launchPath = "/launch"
-
-function App() {
-  const [hasEnteredLaunch, setHasEnteredLaunch] = useState(
-    () => window.location.pathname !== launchPath
-      && sessionStorage.getItem(launchAccessKey) === "true",
-  )
-
-  useEffect(() => {
-    function syncLaunchState() {
-      if (window.location.pathname === launchPath) {
-        sessionStorage.removeItem(launchAccessKey)
-        setHasEnteredLaunch(false)
-        return
-      }
-
-      setHasEnteredLaunch(sessionStorage.getItem(launchAccessKey) === "true")
-    }
-
-    syncLaunchState()
-    window.addEventListener("popstate", syncLaunchState)
-
-    return () => window.removeEventListener("popstate", syncLaunchState)
-  }, [])
-
-  function handleLaunchEnter() {
-    sessionStorage.setItem(launchAccessKey, "true")
-    window.history.replaceState({}, "", "/")
-    setHasEnteredLaunch(true)
-  }
-
-  if (!hasEnteredLaunch) {
-    return <LaunchLanding onEnter={handleLaunchEnter} />
-  }
-
+function WebsitePage() {
   return (
     <div className="site-shell font-inter text-[#1E2A52]">
       <Header />
@@ -58,6 +27,56 @@ function App() {
       <Footer />
       <FloatingWhatsApp />
     </div>
+  )
+}
+
+function App() {
+  const [session, setSession] = useState(null)
+  const [isAuthLoading, setIsAuthLoading] = useState(() => isSupabaseConfigured)
+
+  useEffect(() => {
+    if (!isSupabaseConfigured) {
+      return undefined
+    }
+
+    let isMounted = true
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (isMounted) {
+        setSession(data.session)
+        setIsAuthLoading(false)
+      }
+    })
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      setSession(nextSession)
+    })
+
+    return () => {
+      isMounted = false
+      authListener.subscription.unsubscribe()
+    }
+  }, [])
+
+  return (
+    <Routes>
+      <Route path="/" element={<WebsitePage />} />
+      <Route
+        path="/admin/login"
+        element={<AdminLogin session={session} />}
+      />
+      <Route
+        path="/admin"
+        element={isAuthLoading ? (
+          <main className="grid min-h-screen place-items-center bg-[#F8FBFF] font-inter font-semibold text-[#1E2A52]">
+            Loading admin...
+          </main>
+        ) : (
+          <AdminDashboard session={isAllowedAdminEmail(session?.user?.email) ? session : null} />
+        )}
+      />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   )
 }
 
