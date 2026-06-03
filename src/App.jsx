@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { Navigate, Route, Routes } from "react-router-dom"
+import { Analytics } from "@vercel/analytics/react"
 import AboutDivya from "./components/AboutDivya"
 import BookingForm from "./components/BookingForm"
 import FloatingWhatsApp from "./components/FloatingWhatsApp"
@@ -59,24 +60,27 @@ function App() {
   }, [])
 
   return (
-    <Routes>
-      <Route path="/" element={<WebsitePage />} />
-      <Route
-        path="/admin/login"
-        element={<AdminLogin session={session} />}
-      />
-      <Route
-        path="/admin"
-        element={isAuthLoading ? (
-          <main className="grid min-h-screen place-items-center bg-[#F8FBFF] font-inter font-semibold text-[#1E2A52]">
-            Loading admin...
-          </main>
-        ) : (
-          <AdminDashboard session={isAllowedAdminEmail(session?.user?.email) ? session : null} />
-        )}
-      />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <>
+      <Routes>
+        <Route path="/" element={<WebsitePage />} />
+        <Route
+          path="/admin/login"
+          element={<AdminLogin session={session} />}
+        />
+        <Route
+          path="/admin"
+          element={isAuthLoading ? (
+            <main className="grid min-h-screen place-items-center bg-[#F8FBFF] font-inter font-semibold text-[#1E2A52]">
+              Loading admin...
+            </main>
+          ) : (
+            <AdminDashboard session={isAllowedAdminEmail(session?.user?.email) ? session : null} />
+          )}
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+      <Analytics />
+    </>
   )
 }
 
