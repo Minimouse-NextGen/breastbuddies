@@ -8,8 +8,8 @@ function Hero() {
     <section id="top" className="relative overflow-hidden bg-gradient-to-br from-[#F7FCFF] via-[#EAF4FF] to-[#DFF0FF] pb-16 pt-5 sm:pb-20 lg:min-h-[560px] lg:pt-4">
       <div className="pointer-events-none absolute left-4 top-8 hidden h-20 w-20 rounded-full border-4 border-white/70 lg:block" />
       <div className="pointer-events-none absolute right-[36%] top-12 hidden text-4xl text-white/70 lg:block">♡</div>
-      <div className="wide-section-frame grid min-h-0 items-start gap-8 lg:min-h-[440px] lg:grid-cols-[0.92fr_1.08fr] xl:min-h-[470px]">
-        <div className="relative z-10 max-w-3xl text-center lg:pt-2 lg:text-left">
+      <div className="mx-auto grid min-h-0 max-w-7xl grid-cols-1 items-center gap-10 px-4 sm:px-6 lg:min-h-[440px] lg:grid-cols-2 lg:px-8 xl:min-h-[470px]">
+        <div className="relative z-10 mx-auto w-full max-w-3xl text-center lg:mx-0 lg:pt-2 lg:text-left">
           <h1 className="heading-h1">
             <span className="block">Compassionate</span>
             <span className="block">Lactation Support for</span>
@@ -42,12 +42,12 @@ function Hero() {
           </div>
         </div>
 
-        <div className="relative mx-auto flex h-[260px] w-full max-w-full items-center justify-center overflow-hidden pt-4 sm:h-[360px] lg:h-[440px] lg:overflow-visible xl:h-[460px]">
+        <div className="relative mx-auto flex w-full max-w-full items-center justify-center overflow-hidden pt-4 sm:min-h-[360px] lg:min-h-[440px] lg:overflow-visible xl:min-h-[460px]">
           <div className="absolute left-1/2 top-1/2 h-[230px] w-[230px] max-w-[80vw] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/70 bg-[#FF6B9A]/12 shadow-[0_18px_55px_rgba(79,142,247,0.12)] sm:h-[320px] sm:w-[320px] lg:h-[390px] lg:w-[390px]" />
           <img
             src="/mother-feeding.png"
             alt="Mother holding and feeding a baby"
-            className="relative z-10 h-full max-h-[460px] w-full max-w-full object-contain pt-4 mix-blend-multiply sm:pt-6"
+            className="relative z-10 h-auto max-h-[460px] w-full max-w-full object-contain pt-4 mix-blend-multiply sm:pt-6"
           />
         </div>
       </div>
