@@ -1,16 +1,17 @@
 import { LogoMark, SmallIcon } from "./Graphics"
+import { scrollToSection } from "../utils/scrollToSection"
 
 const whatsappLink = "https://wa.me/917299788877?text=Hello%20BreastBuddies%2C%20I%20would%20like%20to%20book%20a%20lactation%20consultation."
 
 function Footer() {
   return (
     <footer className="border-t border-sky-900 bg-gradient-to-br from-[#1E2A52] to-[#4F8EF7] py-8 font-inter text-white lg:py-9">
-      <div className="wide-section-frame grid gap-8 sm:grid-cols-2 lg:grid-cols-[1.15fr_0.78fr_0.78fr_1fr] lg:items-start">
-        <div>
+      <div className="wide-section-frame grid min-w-0 gap-8 sm:grid-cols-2 lg:grid-cols-[1.15fr_0.78fr_0.78fr_1fr] lg:items-start">
+        <div className="min-w-0">
           <div className="flex items-center gap-3 sm:items-start">
             <LogoMark className="h-16 w-16 shrink-0 sm:h-[72px] sm:w-[72px]" />
             <div className="min-w-0">
-              <p className="font-playfair text-3xl font-bold leading-none sm:text-[2.6rem]">breastbuddies</p>
+              <p className="break-words font-playfair text-3xl font-bold leading-none sm:text-[2.6rem]">breastbuddies</p>
               <p className="mt-1 text-sm text-sky-100">Because every mother deserves support.</p>
             </div>
           </div>
@@ -19,22 +20,22 @@ function Footer() {
         <div>
           <p className="font-semibold">Quick Links</p>
           <div className="mt-4 space-y-2 text-sm text-sky-100">
-            <a href="#top" className="block hover:text-white">Home</a>
-            <a href="#about" className="block hover:text-white">About Divya</a>
-            <a href="#services" className="block hover:text-white">Services</a>
-            <a href="#booking" className="block hover:text-white">Book Consultation</a>
+            <a href="/" onClick={(event) => scrollToSection(event, "top")} className="block hover:text-white">Home</a>
+            <a href="/#about" onClick={(event) => scrollToSection(event, "about")} className="block hover:text-white">About Divya</a>
+            <a href="/#services" onClick={(event) => scrollToSection(event, "services")} className="block hover:text-white">Services</a>
+            <a href="/#booking" onClick={(event) => scrollToSection(event, "booking")} className="block hover:text-white">Book Consultation</a>
           </div>
         </div>
 
         <div>
           <p className="font-semibold">Connect</p>
           <div className="mt-4 space-y-3 text-sm text-sky-100">
-            <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-white">
+            <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="flex min-w-0 items-center gap-2 break-words hover:text-white">
               <SmallIcon type="whatsapp" color="#22c55e" className="h-5 w-5" />
-              Chat on WhatsApp
+              <span className="min-w-0">Chat on WhatsApp</span>
             </a>
-            <p>hello@breastbuddies.com</p>
-            <p>@breastbuddies</p>
+            <p className="break-words">hello@breastbuddies.com</p>
+            <p className="break-words">@breastbuddies</p>
           </div>
         </div>
 

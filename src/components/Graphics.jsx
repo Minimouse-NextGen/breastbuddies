@@ -199,6 +199,12 @@ export function SmallIcon({ type, className = "h-8 w-8", color = "#2f7df6" }) {
       )}
       {type === "heart" && <path d="M24 39S9 30 9 18c0-6 8-10 15-2 7-8 15-4 15 2 0 12-15 21-15 21Z" {...common} />}
       {type === "shield" && <path d="M24 6l15 6v11c0 10-6 16-15 20-9-4-15-10-15-20V12l15-6ZM18 24l4 4 8-10" {...common} />}
+      {type === "info" && (
+        <>
+          <circle cx="24" cy="24" r="17" {...common} />
+          <path d="M24 22v12M24 15h.01" {...common} />
+        </>
+      )}
       {type === "family" && (
         <>
           <circle cx="18" cy="15" r="6" {...common} />

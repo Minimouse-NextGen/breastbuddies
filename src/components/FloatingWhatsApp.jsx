@@ -9,7 +9,7 @@ function FloatingWhatsApp() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Contact breastbuddies on WhatsApp"
-      className="fixed bottom-5 right-5 z-50 grid h-14 w-14 place-items-center rounded-full bg-emerald-500 text-white shadow-2xl shadow-emerald-900/25 transition hover:-translate-y-1 hover:bg-emerald-600"
+      className="fixed bottom-4 right-4 z-50 grid h-12 w-12 place-items-center rounded-full bg-emerald-500 text-white shadow-2xl shadow-emerald-900/25 transition hover:-translate-y-1 hover:bg-emerald-600 sm:bottom-5 sm:right-5 sm:h-14 sm:w-14"
     >
       <SmallIcon type="whatsapp" color="#ffffff" className="h-8 w-8" />
     </a>

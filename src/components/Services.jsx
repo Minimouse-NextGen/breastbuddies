@@ -57,9 +57,9 @@ function Services() {
   return (
     <section
       id="services"
-      className="rounded-t-[56px] bg-gradient-to-b from-[#F8FBFF] via-white to-[#F8FBFF] px-4 pb-2 pt-8 sm:px-6 lg:px-8 lg:pb-4 lg:pt-10"
+      className="rounded-t-[36px] bg-gradient-to-b from-[#F8FBFF] via-white to-[#F8FBFF] px-4 pb-2 pt-8 sm:px-6 lg:rounded-t-[56px] lg:px-8 lg:pb-4 lg:pt-10"
     >
-      <div className="mx-auto max-w-[1440px]">
+      <div className="mx-auto w-full max-w-[1440px]">
         <div className="text-center">
           <h2 className="heading-h2">
             How I Can Support You
@@ -71,21 +71,21 @@ function Services() {
           </div>
         </div>
 
-        <div className="mt-10 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:mt-10 lg:grid-cols-3 lg:gap-8">
           {services.map((service) => (
             <article
               key={service.title}
-              className={`flex h-full min-h-[500px] flex-col justify-between rounded-3xl border ${service.border} ${service.background} p-8 shadow-md shadow-sky-900/5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl`}
+              className={`flex h-full min-w-0 flex-col justify-between rounded-3xl border ${service.border} ${service.background} p-5 shadow-md shadow-sky-900/5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl sm:p-7 lg:min-h-[500px] lg:p-8`}
             >
               <div>
-                <div className="flex min-h-[210px] flex-col gap-5 sm:flex-row sm:items-start">
+                <div className="flex min-w-0 flex-col gap-5 sm:flex-row sm:items-start lg:min-h-[210px]">
                   <img
                     src={service.image}
                     alt=""
-                    className="h-[130px] w-[130px] shrink-0 object-contain"
+                    className="h-[112px] w-[112px] max-w-full shrink-0 object-contain sm:h-[130px] sm:w-[130px]"
                   />
 
-                  <div>
+                  <div className="min-w-0">
                     <h3 className="heading-h3">
                       {service.title}
                     </h3>
@@ -95,11 +95,11 @@ function Services() {
                   </div>
                 </div>
 
-                <ul className="mt-8 space-y-5">
+                <ul className="mt-7 space-y-4 sm:mt-8 sm:space-y-5">
                   {service.points.map((point) => (
                     <li
                       key={point}
-                      className="flex items-start gap-3 font-inter text-sm font-medium leading-6 text-[#1E2A52]/85 xl:gap-3.5 xl:text-[15px] xl:leading-7"
+                      className="flex min-w-0 items-start gap-3 font-inter text-sm font-medium leading-6 text-[#1E2A52]/85 xl:gap-3.5 xl:text-[15px] xl:leading-7"
                     >
                       <span
                         className="mt-1 grid h-6 w-6 shrink-0 place-items-center rounded-full border-2 bg-white"
@@ -107,22 +107,11 @@ function Services() {
                       >
                         <SmallIcon type="check" color={service.accent} className="h-3.5 w-3.5" />
                       </span>
-                      <span>{point}</span>
+                      <span className="min-w-0 break-words">{point}</span>
                     </li>
                   ))}
                 </ul>
               </div>
-
-              <a
-                href="#booking"
-                className="mt-8 inline-flex items-center gap-4 font-inter text-sm font-semibold transition hover:gap-5 xl:text-base"
-                style={{ color: service.accent }}
-              >
-                View Full Support Areas
-                <span className="text-2xl leading-none" aria-hidden="true">
-                  →
-                </span>
-              </a>
             </article>
           ))}
         </div>

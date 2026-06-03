@@ -1,5 +1,6 @@
 import emailjs from "@emailjs/browser"
 import { useEffect, useMemo, useState } from "react"
+import { SmallIcon } from "./Graphics"
 import { createBooking, getUnavailableBookingSlots } from "../services/bookingsService"
 
 const modes = ["Online video call", "In-Person Consult(Hospital)"]
@@ -416,7 +417,7 @@ BreastBuddies Website`,
 
   return (
     <section id="booking" className="bg-gradient-to-b from-[#eaf7ff] to-[#f6fbff] pb-8 pt-4 lg:pb-10 lg:pt-6">
-      <div className="section-frame">
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <h2 className="heading-h2">
             Book an Online Lactation Consultation
@@ -428,12 +429,29 @@ BreastBuddies Website`,
           </p>
         </div>
 
-        <form
-          className="mx-auto mt-10 max-w-5xl rounded-2xl border border-sky-100 bg-white p-5 shadow-2xl shadow-sky-900/10 sm:p-8"
-          onSubmit={handleSubmit}
-          noValidate
-        >
-          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-10 grid grid-cols-1 items-start gap-8 lg:grid-cols-12 lg:gap-10">
+          <aside className="w-full rounded-3xl border border-[#D6E6FF] bg-[#F8FBFF] p-6 text-[#1E2A52] shadow-lg shadow-sky-900/5 lg:sticky lg:top-28 lg:col-span-4 lg:p-8">
+            <span className="grid h-11 w-11 place-items-center rounded-full bg-white text-[#4F8EF7] shadow-sm shadow-sky-900/10">
+              <SmallIcon type="info" color="#4F8EF7" className="h-5 w-5" />
+            </span>
+            <div className="mt-5">
+              <p className="font-inter text-base font-bold leading-6 text-[#1E2A52]">
+                Care Guidance
+              </p>
+              <p className="mt-3 font-inter text-base font-medium leading-8 text-[#1E2A52]/80">
+                Online consultations have limitations. Cases that require in-person assessment of
+                the baby or mother may be referred for offline care to support the best possible
+                outcomes.
+              </p>
+            </div>
+          </aside>
+
+          <form
+            className="min-w-0 rounded-3xl border border-sky-100 bg-white p-6 shadow-2xl shadow-sky-900/10 sm:p-8 lg:col-span-8 xl:p-10"
+            onSubmit={handleSubmit}
+            noValidate
+          >
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3 [&>*]:min-w-0">
             <label className="block">
               <span className="font-inter text-sm font-semibold text-[#1E2A52]">Full Name</span>
               <input
@@ -551,7 +569,7 @@ BreastBuddies Website`,
               </button>
 
               {isCalendarOpen && (
-                <div className="absolute left-0 top-full z-30 mt-3 w-full min-w-[320px] rounded-3xl border border-sky-100 bg-white p-4 shadow-2xl shadow-sky-900/15 sm:w-[380px]">
+                <div className="absolute left-0 top-full z-30 mt-3 w-full min-w-0 rounded-3xl border border-sky-100 bg-white p-4 shadow-2xl shadow-sky-900/15">
                   <div className="flex items-center justify-between">
                     <button
                       type="button"
@@ -688,7 +706,7 @@ BreastBuddies Website`,
             </div>
 
             {formData.preferredDate && formData.consultationDuration ? (
-              <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 {timeSlots.map((slot) => {
                   const isSelected = formData.preferredTimeSlot === slot
                   const durationMinutes = getDurationMinutes(formData.consultationDuration)
@@ -788,7 +806,8 @@ BreastBuddies Website`,
           >
             {isSending ? "Sending Request..." : "Request Consultation"}
           </button>
-        </form>
+          </form>
+        </div>
       </div>
     </section>
   )
