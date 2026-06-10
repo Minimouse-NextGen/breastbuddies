@@ -50,12 +50,12 @@ function AboutDivya() {
     <section id="about" className="bg-white pb-8 pt-6 lg:pb-10 lg:pt-8">
       <div className="section-frame">
         <div className="grid min-w-0 items-start gap-8 lg:grid-cols-[0.42fr_0.58fr] xl:gap-10">
-          <div className="mx-auto w-full max-w-[420px] rounded-[1.35rem] bg-[#F6FBFF] p-4 shadow-[0_16px_42px_rgba(30,42,82,0.09)] sm:p-5 lg:max-w-none">
-            <div className="overflow-hidden rounded-[1.2rem] bg-white">
+          <div className="mx-auto w-full max-w-[420px] rounded-[8px] bg-[#F6FBFF] p-[8px] shadow-[0_16px_42px_rgba(30,42,82,0.09)] lg:max-w-none">
+            <div className="overflow-hidden rounded-[8px] bg-white">
               <img
                 src="/divya-dinesh.jpeg"
                 alt="Divya Umashankar"
-                className="aspect-[4/4.35] h-full w-full max-w-full object-cover object-[45%_28%]"
+                className="aspect-[4/4.35] h-full w-full max-w-full object-cover object-[50%_34%]"
               />
             </div>
           </div>
