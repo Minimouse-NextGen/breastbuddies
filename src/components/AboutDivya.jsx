@@ -49,14 +49,34 @@ function AboutDivya() {
   return (
     <section id="about" className="bg-white pb-8 pt-6 lg:pb-10 lg:pt-8">
       <div className="section-frame">
-        <div className="grid min-w-0 items-start gap-8 lg:grid-cols-[0.42fr_0.58fr] xl:gap-10">
-          <div className="mx-auto w-full max-w-[420px] rounded-[8px] bg-[#F6FBFF] p-[8px] shadow-[0_16px_42px_rgba(30,42,82,0.09)] lg:max-w-none">
-            <div className="overflow-hidden rounded-[8px] bg-white">
-              <img
-                src="/divya-dinesh.jpeg"
-                alt="Divya Umashankar"
-                className="aspect-[4/4.35] h-full w-full max-w-full object-cover object-[50%_34%]"
-              />
+        <div className="grid min-w-0 items-start gap-8 lg:grid-cols-[minmax(500px,0.46fr)_minmax(0,0.54fr)] xl:gap-10">
+          <div className="mx-auto mb-[300px] w-full max-w-[640px] rounded-[8px] bg-[#F6FBFF] p-[8px] shadow-[0_16px_42px_rgba(30,42,82,0.09)] sm:mb-[230px] lg:mb-[120px] lg:max-w-none">
+            <div className="relative">
+              <div className="overflow-hidden rounded-[8px] bg-white">
+                <img
+                  src="/divya-dinesh.jpeg"
+                  alt="Divya Umashankar"
+                  className="aspect-square h-full w-full max-w-full object-cover object-center"
+                />
+              </div>
+              <div className="absolute bottom-0 left-1/2 grid w-[98%] max-w-[600px] -translate-x-1/2 translate-y-[82%] grid-cols-2 gap-2 rounded-[12px] border border-[rgba(246,90,150,0.14)] bg-[rgba(255,246,249,0.92)] px-2.5 py-2.5 shadow-[0_12px_30px_rgba(30,41,59,0.10)] backdrop-blur-[8px] max-[379px]:grid-cols-1 lg:grid-cols-4">
+                {profileCredentials.map((credential) => (
+                  <div
+                    key={credential.text}
+                    className="flex min-h-[95px] min-w-0 flex-col items-center justify-start rounded-[10px] border border-[rgba(246,90,150,0.12)] bg-white px-1.5 py-2 text-center shadow-[0_8px_18px_rgba(30,41,59,0.06)]"
+                  >
+                    <span className="mb-1.5 flex h-[38px] shrink-0 items-center justify-center">
+                      <span className="grid h-[34px] w-[34px] place-items-center rounded-full bg-[#F33D8A] text-white shadow-[0_8px_16px_rgba(243,61,138,0.22)]">
+                        <SmallIcon type={credential.icon} color="#ffffff" className="h-4 w-4" />
+                      </span>
+                    </span>
+                    <p className="min-h-[36px] min-w-0 whitespace-normal break-normal font-inter text-[10px] font-bold leading-[1.25] text-[#17254D] [overflow-wrap:normal] [word-break:normal]">
+                      {credential.text}
+                    </p>
+                    <span className="mt-1.5 h-[2px] w-6 rounded-full bg-[#F65A96]" />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -95,21 +115,6 @@ function AboutDivya() {
             >
               Know more
             </a>
-          </div>
-        </div>
-
-        <div className="mt-5 rounded-3xl border border-[#FFD1DF]/70 bg-white px-4 py-5 shadow-[0_18px_42px_rgba(255,107,154,0.13)] sm:px-5">
-          <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2 lg:grid-cols-4">
-            {profileCredentials.map((credential) => (
-              <div key={credential.text} className="flex min-h-[66px] min-w-0 items-center gap-4">
-                <span className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-[#E93F82] text-white shadow-md shadow-pink-500/20">
-                  <SmallIcon type={credential.icon} color="#ffffff" className="h-7 w-7" />
-                </span>
-                <p className="min-w-0 break-words font-inter text-sm font-semibold leading-5 text-[#1E2A52] xl:text-[15px]">
-                  {credential.text}
-                </p>
-              </div>
-            ))}
           </div>
         </div>
 
