@@ -3,7 +3,15 @@ import { useEffect, useMemo, useState } from "react"
 import { SmallIcon } from "./Graphics"
 import { createBooking, getUnavailableBookingSlots } from "../services/bookingsService"
 
-const modes = ["Online video call", "In-Person Consult(Hospital)"]
+const IN_PERSON_MODE = "In-Person Consult (Hospital)"
+const LEGACY_IN_PERSON_MODE = "In-Person Consult(Hospital)"
+const IN_PERSON_LOCATION = "Joseph Hospital, Chetpet"
+const IN_PERSON_DURATION = "Not applicable"
+const IN_PERSON_TIME_SLOT = "To be confirmed"
+const IN_PERSON_PLACEHOLDER_TIME = "12:00 AM"
+const SLOT_REFRESH_ERROR = "Unable to refresh slot availability. Please try again."
+
+const modes = ["Online video call", IN_PERSON_MODE]
 const durations = ["30 minutes", "1 hour"]
 const timeSlots = [
   "09:00 AM",
@@ -52,6 +60,10 @@ const initialFormData = {
   preferredDate: "",
   consultationDuration: "",
   preferredTimeSlot: "",
+}
+
+function isInPersonConsultationMode(mode) {
+  return mode === IN_PERSON_MODE || mode === LEGACY_IN_PERSON_MODE
 }
 
 function getTodayInputValue() {
@@ -186,12 +198,13 @@ function BookingForm() {
   const [errors, setErrors] = useState({})
   const [isSending, setIsSending] = useState(false)
   const calendarDays = useMemo(() => buildCalendarDays(calendarMonth), [calendarMonth])
+  const isInPersonConsultation = isInPersonConsultationMode(formData.consultationMode)
 
   useEffect(() => {
     let isMounted = true
 
     async function loadUnavailableSlots() {
-      if (!formData.preferredDate) {
+      if (!formData.preferredDate || isInPersonConsultation) {
         setBookedSlots([])
         return
       }
@@ -205,7 +218,7 @@ function BookingForm() {
         if (isMounted) {
           console.error("Unable to load booked slots", error)
           setMessageType("error")
-          setMessage("Unable to refresh slot availability. Please try again.")
+          setMessage(SLOT_REFRESH_ERROR)
         }
       }
     }
@@ -215,7 +228,7 @@ function BookingForm() {
     return () => {
       isMounted = false
     }
-  }, [formData.preferredDate])
+  }, [formData.preferredDate, isInPersonConsultation])
 
   function updateField(field, value) {
     setFormData((current) => ({
@@ -233,6 +246,26 @@ function BookingForm() {
   function updateMobileNumber(value) {
     const sanitized = value.replace(/[^\d+\s-]/g, "").slice(0, 18)
     updateField("mobileNumber", sanitized)
+  }
+
+  function handleConsultationModeChange(value) {
+    const nextIsInPerson = isInPersonConsultationMode(value)
+
+    setFormData((current) => ({
+      ...current,
+      consultationMode: value,
+      consultationDuration: nextIsInPerson ? "" : current.consultationDuration,
+      preferredTimeSlot: nextIsInPerson ? "" : current.preferredTimeSlot,
+    }))
+    setErrors((current) => {
+      const nextErrors = { ...current }
+      delete nextErrors.consultationMode
+      delete nextErrors.consultationDuration
+      delete nextErrors.preferredTimeSlot
+      return nextErrors
+    })
+    setBookedSlots((current) => (nextIsInPerson ? [] : current))
+    setMessage("")
   }
 
   function validateForm() {
@@ -271,14 +304,16 @@ function BookingForm() {
       nextErrors.preferredDate = "Please select a preferred consultation date."
     }
 
-    if (!formData.consultationDuration) {
+    if (!isInPersonConsultation && !formData.consultationDuration) {
       nextErrors.consultationDuration = "Please select a consultation duration."
     }
 
-    if (!formData.preferredTimeSlot) {
+    if (!isInPersonConsultation && !formData.preferredTimeSlot) {
       nextErrors.preferredTimeSlot = "Please select an available time slot."
     } else if (
-      formData.preferredDate
+      !isInPersonConsultation
+      && formData.preferredTimeSlot
+      && formData.preferredDate
       && formData.consultationDuration
       && !isSlotSelectable(
         formData.preferredTimeSlot,
@@ -304,12 +339,13 @@ function BookingForm() {
       return
     }
 
-    const durationMinutes = getDurationMinutes(formData.consultationDuration)
-    const selectedSlotRange = getTimeRange(
-      formData.preferredTimeSlot,
-      durationMinutes,
-    )
-    const selectedEndTime = getEndTime(formData.preferredTimeSlot, durationMinutes)
+    const durationMinutes = isInPersonConsultation ? 0 : getDurationMinutes(formData.consultationDuration)
+    const consultationDuration = isInPersonConsultation ? IN_PERSON_DURATION : formData.consultationDuration
+    const selectedSlotRange = isInPersonConsultation
+      ? IN_PERSON_TIME_SLOT
+      : getTimeRange(formData.preferredTimeSlot, durationMinutes)
+    const selectedStartTime = isInPersonConsultation ? IN_PERSON_PLACEHOLDER_TIME : formData.preferredTimeSlot
+    const selectedEndTime = isInPersonConsultation ? IN_PERSON_PLACEHOLDER_TIME : getEndTime(formData.preferredTimeSlot, durationMinutes)
     const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID
     const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID
     const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY
@@ -328,7 +364,8 @@ function BookingForm() {
       consultation_mode: formData.consultationMode,
       preferred_date: formData.preferredDate,
       preferred_time_slot: selectedSlotRange,
-      consultation_duration: formData.consultationDuration,
+      consultation_duration: consultationDuration,
+      location: isInPersonConsultation ? IN_PERSON_LOCATION : "",
       submitted_from: "BreastBuddies Website",
       message: `A new consultation request has been submitted.
 
@@ -357,7 +394,10 @@ Preferred Time Slot:
 ${selectedSlotRange}
 
 Consultation Duration:
-${formData.consultationDuration}
+${consultationDuration}
+
+Location:
+${isInPersonConsultation ? IN_PERSON_LOCATION : "Online"}
 
 Submitted From:
 BreastBuddies Website`,
@@ -367,24 +407,29 @@ BreastBuddies Website`,
 
     try {
       setIsSending(true)
-      const latestBookedSlots = await getUnavailableBookingSlots(formData.preferredDate)
-      setBookedSlots(latestBookedSlots)
+      if (!isInPersonConsultation) {
+        const latestBookedSlots = await getUnavailableBookingSlots(formData.preferredDate)
+        setBookedSlots(latestBookedSlots)
 
-      if (!isSlotSelectable(
-        formData.preferredTimeSlot,
-        formData.preferredDate,
-        "",
-        durationMinutes,
-        latestBookedSlots,
-      )) {
-        setMessageType("error")
-        setMessage("That time slot is no longer available. Please choose another slot.")
-        return
+        if (!isSlotSelectable(
+          formData.preferredTimeSlot,
+          formData.preferredDate,
+          "",
+          durationMinutes,
+          latestBookedSlots,
+        )) {
+          setMessageType("error")
+          setMessage("That time slot is no longer available. Please choose another slot.")
+          return
+        }
       }
 
       await createBooking({
         ...formData,
-        startTime: formData.preferredTimeSlot,
+        consultationDuration,
+        preferredTimeSlot: selectedSlotRange,
+        location: isInPersonConsultation ? IN_PERSON_LOCATION : "",
+        startTime: selectedStartTime,
         endTime: selectedEndTime,
         slotRange: selectedSlotRange,
         durationMinutes,
@@ -430,15 +475,15 @@ BreastBuddies Website`,
         </div>
 
         <div className="mt-10 grid grid-cols-1 items-start gap-8 lg:grid-cols-12 lg:gap-10">
-          <aside className="w-full rounded-3xl border border-[#D6E6FF] bg-[#F8FBFF] p-6 text-[#1E2A52] shadow-lg shadow-sky-900/5 lg:sticky lg:top-28 lg:col-span-4 lg:p-8">
-            <span className="grid h-11 w-11 place-items-center rounded-full bg-white text-[#4F8EF7] shadow-sm shadow-sky-900/10">
+          <aside className="w-full rounded-3xl border border-sky-300 bg-gradient-to-b from-sky-50 to-[#F4FAFF] p-6 text-[#1E2A52] shadow-lg shadow-sky-900/10 lg:sticky lg:top-28 lg:col-span-4 lg:p-8">
+            <span className="grid h-11 w-11 place-items-center rounded-full border border-sky-200 bg-white text-[#4F8EF7] shadow-sm shadow-sky-900/10">
               <SmallIcon type="info" color="#4F8EF7" className="h-5 w-5" />
             </span>
             <div className="mt-5">
               <p className="font-inter text-base font-bold leading-6 text-[#1E2A52]">
                 Care Guidance
               </p>
-              <p className="mt-3 font-inter text-base font-medium leading-8 text-[#1E2A52]/80">
+              <p className="mt-3 font-inter text-base font-semibold leading-7 text-[#1E2A52]/85">
                 Online consultations have limitations. Cases that require in-person assessment of
                 the baby or mother may be referred for offline care to support the best possible
                 outcomes.
@@ -531,7 +576,7 @@ BreastBuddies Website`,
                 required
                 className="mt-2 h-[58px] w-full rounded-lg border border-slate-200 bg-white px-4 font-inter text-[#1E2A52] outline-none transition focus:border-[#4F8EF7] focus:ring-4 focus:ring-sky-100"
                 value={formData.consultationMode}
-                onChange={(event) => updateField("consultationMode", event.target.value)}
+                onChange={(event) => handleConsultationModeChange(event.target.value)}
               >
                 <option value="" disabled>
                   Select mode
@@ -649,145 +694,159 @@ BreastBuddies Website`,
               {errors.preferredDate && <p className="mt-2 font-inter text-xs font-semibold text-[#B8325C]">{errors.preferredDate}</p>}
             </div>
 
-            <label className="block">
-              <span className="font-inter text-sm font-semibold text-[#1E2A52]">Consultation Duration</span>
-              <select
-                name="duration"
-                required
-                value={formData.consultationDuration}
-                onChange={(event) => {
-                  setFormData((current) => ({
-                    ...current,
-                    consultationDuration: event.target.value,
-                    preferredTimeSlot: "",
-                  }))
-                  setErrors((current) => {
-                    const nextErrors = { ...current }
-                    delete nextErrors.consultationDuration
-                    delete nextErrors.preferredTimeSlot
-                    return nextErrors
-                  })
-                  setMessage("")
-                }}
-                className="mt-2 h-[58px] w-full rounded-xl border border-sky-200 bg-white px-4 font-inter text-[#1E2A52] outline-none transition focus:border-[#4F8EF7] focus:ring-4 focus:ring-sky-100"
-              >
-                <option value="" disabled>
-                  Select duration
-                </option>
-                {durations.map((option) => (
-                  <option key={option}>{option}</option>
-                ))}
-              </select>
-              {errors.consultationDuration && <p className="mt-2 font-inter text-xs font-semibold text-[#B8325C]">{errors.consultationDuration}</p>}
-            </label>
-          </div>
-
-          <div className="mt-6 rounded-3xl border border-sky-100 bg-[#F8FBFF] p-4 sm:p-5">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <p className="font-inter text-base font-semibold text-[#1E2A52]">Preferred Time Slot</p>
-                <p className="mt-1 font-inter text-sm text-[#1E2A52]/65">
-                  Select a date and duration, then choose a time range that works for you.
-                </p>
-              </div>
-              <div className="rounded-2xl bg-white px-4 py-3 text-left shadow-sm shadow-sky-900/5 sm:text-right">
-                <p className="font-inter text-xs font-semibold uppercase tracking-[0.16em] text-[#4F8EF7]">
-                  SELECTION
-                </p>
-                <p className="mt-1 font-inter text-sm font-semibold text-[#1E2A52]">
-                  {formData.preferredTimeSlot
-                    ? getTimeRange(
-                        formData.preferredTimeSlot,
-                        getDurationMinutes(formData.consultationDuration),
-                      )
-                    : "No slot selected"}
-                </p>
-              </div>
-            </div>
-
-            {formData.preferredDate && formData.consultationDuration ? (
-              <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                {timeSlots.map((slot) => {
-                  const isSelected = formData.preferredTimeSlot === slot
-                  const durationMinutes = getDurationMinutes(formData.consultationDuration)
-                  const isBooked = isSlotDisabledByBooking(
-                    slot,
-                    formData.preferredDate,
-                    bookedSlots,
-                  )
-                  const isUnavailable = !hasContinuousSlotBlocks(slot, durationMinutes)
-                  const isRangeBooked = isSlotRangeDisabledByBooking(
-                    slot,
-                    formData.preferredDate,
-                    durationMinutes,
-                    bookedSlots,
-                  )
-                  const isIncluded = isSlotInsideSelectedRange(
-                    slot,
-                    formData.preferredTimeSlot,
-                    durationMinutes,
-                  )
-                  const isSelectable = isSelected || isSlotSelectable(
-                    slot,
-                    formData.preferredDate,
-                    formData.preferredTimeSlot,
-                    durationMinutes,
-                    bookedSlots,
-                  )
-                  const range = getTimeRange(slot, durationMinutes)
-
-                  return (
-                    <button
-                      key={slot}
-                      type="button"
-                      disabled={!isSelectable}
-                      onClick={() => {
-                        if (!isSelectable) {
-                          return
-                        }
-                        updateField("preferredTimeSlot", slot)
-                        setMessage("")
-                      }}
-                      className={`group rounded-2xl border px-4 py-3 text-left font-inter transition-all duration-300 ${
-                        isSelected
-                          ? "border-[#4F8EF7] bg-[#EAF4FF] text-[#1E2A52] shadow-md shadow-blue-500/10"
-                          : isBooked || isIncluded || isUnavailable || isRangeBooked
-                            ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400 opacity-70"
-                          : "border-sky-100 bg-white text-[#1E2A52]/80 hover:-translate-y-0.5 hover:border-[#4F8EF7] hover:bg-white hover:shadow-md hover:shadow-sky-900/5"
-                      }`}
-                      aria-pressed={isSelected}
-                    >
-                      <span className="block text-base font-semibold">{slot}</span>
-                      <span
-                        className={`mt-1 block text-xs font-medium ${
-                          isSelected
-                            ? "text-[#4F8EF7]"
-                            : isBooked || isIncluded || isUnavailable || isRangeBooked
-                              ? "text-slate-400"
-                              : "text-[#1E2A52]/55 group-hover:text-[#4F8EF7]"
-                        }`}
-                      >
-                        {isBooked || isRangeBooked
-                          ? "Booked"
-                          : isIncluded
-                            ? "Included"
-                            : isUnavailable
-                              ? "Unavailable"
-                              : range}
-                      </span>
-                    </button>
-                  )
-                })}
+            {isInPersonConsultation ? (
+              <div className="block">
+                <span className="font-inter text-sm font-semibold text-[#1E2A52]">Location</span>
+                <div className="mt-2 rounded-xl border border-sky-300 bg-sky-50/70 px-4 py-4 text-[#1E2A52] shadow-sm shadow-sky-900/5">
+                  <p className="font-inter text-sm font-semibold">{IN_PERSON_LOCATION}</p>
+                  <p className="mt-2 font-inter text-sm leading-6 text-[#1E2A52]/75">
+                    Hospital consultation timing will be coordinated based on Joseph Hospital outpatient availability. After submitting your request, we will contact you to confirm the suitable time.
+                  </p>
+                </div>
               </div>
             ) : (
-              <div className="mt-4 rounded-xl border border-dashed border-sky-200 bg-[#F8FBFF] px-4 py-5 font-inter text-sm text-[#1E2A52]/65">
-                Available time slots will appear here after selecting a date and duration.
-              </div>
+              <label className="block">
+                <span className="font-inter text-sm font-semibold text-[#1E2A52]">Consultation Duration</span>
+                <select
+                  name="duration"
+                  required
+                  value={formData.consultationDuration}
+                  onChange={(event) => {
+                    setFormData((current) => ({
+                      ...current,
+                      consultationDuration: event.target.value,
+                      preferredTimeSlot: "",
+                    }))
+                    setErrors((current) => {
+                      const nextErrors = { ...current }
+                      delete nextErrors.consultationDuration
+                      delete nextErrors.preferredTimeSlot
+                      return nextErrors
+                    })
+                    setMessage("")
+                  }}
+                  className="mt-2 h-[58px] w-full rounded-xl border border-sky-200 bg-white px-4 font-inter text-[#1E2A52] outline-none transition focus:border-[#4F8EF7] focus:ring-4 focus:ring-sky-100"
+                >
+                  <option value="" disabled>
+                    Select duration
+                  </option>
+                  {durations.map((option) => (
+                    <option key={option}>{option}</option>
+                  ))}
+                </select>
+                {errors.consultationDuration && <p className="mt-2 font-inter text-xs font-semibold text-[#B8325C]">{errors.consultationDuration}</p>}
+              </label>
             )}
-            {errors.preferredTimeSlot && <p className="mt-3 font-inter text-xs font-semibold text-[#B8325C]">{errors.preferredTimeSlot}</p>}
           </div>
 
-          {message && (
+          {!isInPersonConsultation && (
+            <div className="mt-6 rounded-3xl border border-sky-100 bg-[#F8FBFF] p-4 sm:p-5">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="font-inter text-base font-semibold text-[#1E2A52]">Preferred Time Slot</p>
+                  <p className="mt-1 font-inter text-sm text-[#1E2A52]/65">
+                    Select a date and duration, then choose a time range that works for you.
+                  </p>
+                </div>
+                <div className="rounded-2xl bg-white px-4 py-3 text-left shadow-sm shadow-sky-900/5 sm:text-right">
+                  <p className="font-inter text-xs font-semibold uppercase tracking-[0.16em] text-[#4F8EF7]">
+                    SELECTION
+                  </p>
+                  <p className="mt-1 font-inter text-sm font-semibold text-[#1E2A52]">
+                    {formData.preferredTimeSlot
+                      ? getTimeRange(
+                          formData.preferredTimeSlot,
+                          getDurationMinutes(formData.consultationDuration),
+                        )
+                      : "No slot selected"}
+                  </p>
+                </div>
+              </div>
+
+              {formData.preferredDate && formData.consultationDuration ? (
+                <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                  {timeSlots.map((slot) => {
+                    const isSelected = formData.preferredTimeSlot === slot
+                    const durationMinutes = getDurationMinutes(formData.consultationDuration)
+                    const isBooked = isSlotDisabledByBooking(
+                      slot,
+                      formData.preferredDate,
+                      bookedSlots,
+                    )
+                    const isUnavailable = !hasContinuousSlotBlocks(slot, durationMinutes)
+                    const isRangeBooked = isSlotRangeDisabledByBooking(
+                      slot,
+                      formData.preferredDate,
+                      durationMinutes,
+                      bookedSlots,
+                    )
+                    const isIncluded = isSlotInsideSelectedRange(
+                      slot,
+                      formData.preferredTimeSlot,
+                      durationMinutes,
+                    )
+                    const isSelectable = isSelected || isSlotSelectable(
+                      slot,
+                      formData.preferredDate,
+                      formData.preferredTimeSlot,
+                      durationMinutes,
+                      bookedSlots,
+                    )
+                    const range = getTimeRange(slot, durationMinutes)
+
+                    return (
+                      <button
+                        key={slot}
+                        type="button"
+                        disabled={!isSelectable}
+                        onClick={() => {
+                          if (!isSelectable) {
+                            return
+                          }
+                          updateField("preferredTimeSlot", slot)
+                          setMessage("")
+                        }}
+                        className={`group rounded-2xl border px-4 py-3 text-left font-inter transition-all duration-300 ${
+                          isSelected
+                            ? "border-[#4F8EF7] bg-[#EAF4FF] text-[#1E2A52] shadow-md shadow-blue-500/10"
+                            : isBooked || isIncluded || isUnavailable || isRangeBooked
+                              ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400 opacity-70"
+                            : "border-sky-100 bg-white text-[#1E2A52]/80 hover:-translate-y-0.5 hover:border-[#4F8EF7] hover:bg-white hover:shadow-md hover:shadow-sky-900/5"
+                        }`}
+                        aria-pressed={isSelected}
+                      >
+                        <span className="block text-base font-semibold">{slot}</span>
+                        <span
+                          className={`mt-1 block text-xs font-medium ${
+                            isSelected
+                              ? "text-[#4F8EF7]"
+                              : isBooked || isIncluded || isUnavailable || isRangeBooked
+                                ? "text-slate-400"
+                                : "text-[#1E2A52]/55 group-hover:text-[#4F8EF7]"
+                          }`}
+                        >
+                          {isBooked || isRangeBooked
+                            ? "Booked"
+                            : isIncluded
+                              ? "Included"
+                              : isUnavailable
+                                ? "Unavailable"
+                                : range}
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
+              ) : (
+                <div className="mt-4 rounded-xl border border-dashed border-sky-200 bg-[#F8FBFF] px-4 py-5 font-inter text-sm text-[#1E2A52]/65">
+                  Available time slots will appear here after selecting a date and duration.
+                </div>
+              )}
+              {errors.preferredTimeSlot && <p className="mt-3 font-inter text-xs font-semibold text-[#B8325C]">{errors.preferredTimeSlot}</p>}
+            </div>
+          )}
+
+          {message && (!isInPersonConsultation || message !== SLOT_REFRESH_ERROR) && (
             <p
               className={`mt-5 rounded-xl px-4 py-3 font-inter text-sm font-medium ${
                 messageType === "success"
