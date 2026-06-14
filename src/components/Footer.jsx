@@ -6,13 +6,17 @@ const whatsappLink = "https://wa.me/917299788877?text=Hello%20BreastBuddies%2C%2
 function Footer() {
   return (
     <footer className="border-t border-sky-900 bg-gradient-to-br from-[#1E2A52] to-[#4F8EF7] py-8 font-inter text-white lg:py-9">
-      <div className="wide-section-frame grid min-w-0 gap-8 sm:grid-cols-2 lg:grid-cols-[1.15fr_0.78fr_0.78fr_1fr] lg:items-start">
+      <div className="wide-section-frame grid min-w-0 gap-y-8 gap-x-7 sm:grid-cols-2 lg:grid-cols-[minmax(360px,1.45fr)_minmax(120px,0.65fr)_minmax(190px,0.85fr)_minmax(220px,1fr)] lg:items-start xl:grid-cols-[minmax(390px,1.55fr)_minmax(140px,0.7fr)_minmax(210px,0.9fr)_minmax(260px,1fr)] xl:gap-x-10">
         <div className="min-w-0">
-          <div className="flex items-center gap-3 sm:items-start">
-            <LogoMark className="h-16 w-16 shrink-0 sm:h-[72px] sm:w-[72px]" />
-            <div className="min-w-0">
-              <p className="break-words font-playfair text-3xl font-bold leading-none sm:text-[2.6rem]">breastbuddies</p>
-              <p className="mt-1 text-sm text-sky-100">Because every mother deserves support.</p>
+          <div className="flex items-start gap-3 sm:gap-4">
+            <LogoMark className="h-12 w-12 shrink-0 sm:h-16 sm:w-16 lg:h-14 lg:w-14 xl:h-[72px] xl:w-[72px]" />
+            <div className="min-w-0 pt-1">
+              <p className="whitespace-nowrap font-playfair text-[1.75rem] font-bold leading-none tracking-normal sm:text-[2.25rem] lg:text-[2rem] xl:text-[2.45rem]">
+                breastbuddies
+              </p>
+              <p className="mt-2 max-w-[18rem] text-sm leading-6 text-sky-100">
+                Because every mother deserves support.
+              </p>
             </div>
           </div>
         </div>
@@ -48,7 +52,7 @@ function Footer() {
         </div>
       </div>
       <div className="wide-section-frame mt-7 text-center font-inter text-sm text-sky-100">
-        <p>© 2026 BreastBuddies. All Rights Reserved.</p>
+        <p>&copy; 2026 BreastBuddies. All Rights Reserved.</p>
         <p className="mt-2 text-xs text-sky-200">Because every mother deserves support.</p>
       </div>
     </footer>
