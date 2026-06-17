@@ -82,7 +82,7 @@ function AboutDivya() {
 
           <div className="min-w-0">
             <h2 className="heading-h2">
-              Meet <span className="text-[#FF6B9A]">Divya Umashankar</span>
+              Meet <span className="text-[#FF477E]">Divya Umashankar</span>
             </h2>
 
             <div className="mt-5 space-y-5 font-inter text-base font-medium leading-7 text-[#1E2A52]/85">
@@ -111,7 +111,7 @@ function AboutDivya() {
             <a
               href="/#booking"
               onClick={(event) => scrollToSection(event, "booking")}
-              className="consultation-button mt-7 inline-flex min-h-[48px] items-center justify-center rounded-xl px-6 py-3 font-inter text-sm font-semibold"
+              className="bb-button bb-button-secondary mt-7"
             >
               Know more
             </a>
@@ -122,13 +122,13 @@ function AboutDivya() {
           {profileDetails.map((detail) => (
             <div key={detail.title} className="min-w-0 border-b border-[#DDE8F7] p-5 last:border-b-0 lg:border-b-0 lg:border-r lg:last:border-r-0">
               <div className="flex items-start gap-3">
-                <SmallIcon type={detail.icon} color="#4F8EF7" className="h-8 w-8 shrink-0" />
+                <SmallIcon type={detail.icon} color="#0353A4" className="h-8 w-8 shrink-0" />
                 <div className="min-w-0">
                   <h3 className="font-playfair text-xl font-bold leading-tight text-[#1E2A52]">
                     {detail.title}
                   </h3>
                   {detail.subtitle && (
-                    <p className="mt-1 font-inter text-xs font-semibold text-[#4F8EF7]">
+                    <p className="mt-1 font-inter text-xs font-semibold text-[#0353A4]">
                       {detail.subtitle}
                     </p>
                   )}

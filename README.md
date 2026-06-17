@@ -1,16 +1,47 @@
-# React + Vite
+# BreastBuddies
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+BreastBuddies is a React + Vite website for lactation support services,
+consultation booking, and booking administration.
 
-Currently, two official plugins are available:
+## Local Development
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Install dependencies:
 
-## React Compiler
+```bash
+npm install
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Create `.env` from `.env.example` and fill in the EmailJS and Supabase values.
 
-## Expanding the ESLint configuration
+Start the dev server:
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+npm run dev
+```
+
+Build for production:
+
+```bash
+npm run build
+```
+
+## Admin Panel
+
+The admin panel lives at:
+
+```text
+/admin/login
+```
+
+It uses Supabase Auth, Row Level Security, and the `admin_profiles` table to
+control access. See [ADMIN_SETUP.md](ADMIN_SETUP.md) for the full setup steps.
+
+## Supabase
+
+The database schema and RLS policies are in:
+
+```text
+supabase/bookings.sql
+```
+
+Run that SQL in the Supabase SQL editor before testing bookings or admin access.

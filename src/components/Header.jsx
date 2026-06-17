@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react"
-import { LogoMark, SmallIcon } from "./Graphics"
+import { BrandTagline, BrandWordmark, LogoMark, SmallIcon } from "./Graphics"
 import { scrollToSection } from "../utils/scrollToSection"
 
 const navItems = [
   { label: "Home", id: "top" },
   { label: "About Divya", id: "about" },
   { label: "Services", id: "services" },
+  { label: "Gallery", id: "gallery" },
   { label: "Book Consultation", id: "booking" },
 ]
 
@@ -53,25 +54,21 @@ function Header() {
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-sky-100 bg-white shadow-sm shadow-sky-900/5">
-      <div className="mx-auto flex min-h-[72px] w-full max-w-7xl items-center justify-between gap-3 px-4 py-2 sm:px-6 lg:gap-6 lg:px-8">
+      <div className="mx-auto flex min-h-[76px] w-full max-w-7xl items-center justify-between gap-3 px-4 py-2.5 sm:px-6 lg:gap-6 lg:px-8">
         <a
           href="/"
           onClick={(event) => handleSectionClick(event, "top")}
-          className="flex min-w-0 items-center gap-2 sm:gap-3"
+          className="flex min-w-0 items-center gap-3 sm:gap-4"
           aria-label="breastbuddies home"
         >
-          <LogoMark className="h-11 w-11 shrink-0 sm:h-12 sm:w-12" />
-          <span className="min-w-0">
-            <span className="block truncate font-playfair text-[22px] font-bold leading-none tracking-normal text-[#4F8EF7] sm:text-[28px]">
-              breastbuddies
-            </span>
-            <span className="mt-1.5 block max-w-[210px] truncate font-inter text-[11px] font-semibold leading-none text-[#FF6B9A] sm:max-w-none sm:text-[12px]">
-              Because every mother deserves support.
-            </span>
+          <LogoMark className="h-12 w-12 shrink-0 sm:h-14 sm:w-14" />
+          <span className="flex min-w-0 flex-col justify-center">
+            <BrandWordmark className="block" sizeClassName="text-[25px] sm:text-[34px]" />
+            <BrandTagline className="mt-1 block max-w-[280px] font-inter text-[11.5px] font-semibold leading-[1.3] text-[#FF477E] sm:max-w-none sm:text-[13px]" />
           </span>
         </a>
 
-        <nav className="hidden flex-1 items-center justify-center gap-4 font-inter text-[15px] font-semibold text-[#1E2A52] lg:flex">
+        <nav className="hidden flex-1 items-center justify-center gap-3 font-inter text-[15px] font-semibold text-[#1E2A52] lg:flex xl:gap-4">
           {navItems.map((item) => (
             <a
               key={item.id}
@@ -79,8 +76,8 @@ function Header() {
               onClick={(event) => handleSectionClick(event, item.id)}
               className={`inline-flex min-h-[44px] items-center justify-center rounded-xl px-4 text-center leading-none transition ${
                 activeSection === item.id
-                  ? "bg-[#EAF4FF] text-[#4F8EF7]"
-                  : "hover:bg-[#F4F8FF] hover:text-[#4F8EF7]"
+                  ? "bg-[#EAF4FF] text-[#0353A4]"
+                  : "hover:bg-[#F4F8FF] hover:text-[#0353A4]"
               }`}
             >
               {item.label}
@@ -93,15 +90,15 @@ function Header() {
             href={whatsappLink}
             target="_blank"
             rel="noopener noreferrer"
-            className="hidden min-w-[210px] items-center justify-center gap-3 rounded-2xl border-2 border-[#34C38F]/60 bg-white px-6 py-3 font-inter text-[15px] font-semibold text-[#1E2A52] shadow-sm transition hover:-translate-y-0.5 hover:border-[#34C38F] xl:flex"
+            className="bb-button bb-button-whatsapp-outline hidden min-w-[210px] xl:flex"
           >
-            <SmallIcon type="whatsapp" color="#16a974" className="h-5 w-5" />
+            <SmallIcon type="whatsapp" color="#25D366" className="h-4 w-4" />
             Chat on WhatsApp
           </a>
           <a
             href="/#booking"
             onClick={(event) => handleSectionClick(event, "booking")}
-            className="consultation-button rounded-2xl px-7 py-3 font-inter text-[15px] font-semibold"
+            className="bb-button bb-button-primary"
           >
             Book Consultation
           </a>
@@ -136,8 +133,8 @@ function Header() {
                 onClick={(event) => handleSectionClick(event, item.id)}
                 className={`rounded-xl px-4 py-3 ${
                   activeSection === item.id
-                    ? "bg-[#EAF4FF] text-[#4F8EF7]"
-                    : "hover:bg-[#F4F8FF] hover:text-[#4F8EF7]"
+                    ? "bg-[#EAF4FF] text-[#0353A4]"
+                    : "hover:bg-[#F4F8FF] hover:text-[#0353A4]"
                 }`}
               >
                 {item.label}
@@ -148,9 +145,9 @@ function Header() {
             href={whatsappLink}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-3 flex min-h-[46px] w-full items-center justify-center gap-3 rounded-xl border-2 border-[#34C38F]/60 bg-white px-4 py-3 font-inter text-sm font-semibold text-[#1E2A52]"
+            className="bb-button bb-button-whatsapp-outline bb-button-full mt-3"
           >
-            <SmallIcon type="whatsapp" color="#16a974" className="h-5 w-5" />
+            <SmallIcon type="whatsapp" color="#25D366" className="h-4 w-4" />
             Chat on WhatsApp
           </a>
         </div>

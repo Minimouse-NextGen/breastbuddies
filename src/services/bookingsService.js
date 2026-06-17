@@ -7,6 +7,29 @@ const STORED_IN_PERSON_DURATION = "30 minutes"
 const IN_PERSON_TIME_SLOT = "To be confirmed"
 const IN_PERSON_PLACEHOLDER_TIME = "12:00 AM"
 
+function convertTimeToMinutes(timeValue) {
+  const [time, period] = timeValue.split(" ")
+  const [rawHour, rawMinute] = time.split(":").map(Number)
+  const hour = period === "PM" && rawHour !== 12 ? rawHour + 12 : period === "AM" && rawHour === 12 ? 0 : rawHour
+  return hour * 60 + rawMinute
+}
+
+function getDurationMinutesFromRange(startTime, endTime, consultationDuration) {
+  if (consultationDuration === "1 hour") {
+    return 60
+  }
+
+  if (consultationDuration === "30 minutes") {
+    return 30
+  }
+
+  if (!startTime || !endTime) {
+    return 0
+  }
+
+  return Math.max(convertTimeToMinutes(endTime) - convertTimeToMinutes(startTime), 0)
+}
+
 function isInPersonConsultationMode(mode) {
   return mode === IN_PERSON_MODE || mode === LEGACY_IN_PERSON_MODE
 }
@@ -80,13 +103,21 @@ export async function getUnavailableBookingSlots(preferredDate) {
     throw error
   }
 
-  return data.map((booking) => ({
-    id: booking.id,
-    date: booking.preferred_date,
-    startTime: formatDatabaseTime(booking.start_time),
-    duration: booking.consultation_duration === "1 hour" ? 60 : 30,
-    status: booking.status,
-  }))
+  return data.map((slot) => {
+    const startTime = formatDatabaseTime(slot.start_time)
+    const endTime = formatDatabaseTime(slot.end_time)
+
+    return {
+      id: slot.id,
+      date: slot.preferred_date,
+      startTime,
+      endTime,
+      duration: getDurationMinutesFromRange(startTime, endTime, slot.consultation_duration),
+      status: slot.status,
+      source: slot.source,
+      reason: slot.reason || "",
+    }
+  })
 }
 
 export async function getAdminBookings() {
@@ -144,4 +175,73 @@ export async function updateBookingNotes(bookingId, adminNotes) {
   }
 
   return normalizeBookingRecord(data)
+}
+
+function normalizeBlockedSlotRecord(blockedSlot) {
+  return {
+    ...blockedSlot,
+    start_time: formatDatabaseTime(blockedSlot.start_time),
+    end_time: formatDatabaseTime(blockedSlot.end_time),
+    is_full_day: Boolean(blockedSlot.is_full_day),
+    blocked_by: blockedSlot.blocked_by || "",
+  }
+}
+
+export async function getAdminBlockedSlots() {
+  if (!isSupabaseConfigured) {
+    throw new Error("Supabase is not configured.")
+  }
+
+  const { data, error } = await supabase
+    .from("blocked_slots")
+    .select("*")
+    .order("block_date", { ascending: true })
+    .order("start_time", { ascending: true })
+    .order("created_at", { ascending: false })
+
+  if (error) {
+    throw error
+  }
+
+  return data.map(normalizeBlockedSlotRecord)
+}
+
+export async function createBlockedSlot({ blockDate, startTime, endTime, reason, isFullDay, blockedBy }) {
+  if (!isSupabaseConfigured) {
+    throw new Error("Supabase is not configured.")
+  }
+
+  const { data, error } = await supabase
+    .from("blocked_slots")
+    .insert({
+      block_date: blockDate,
+      start_time: isFullDay ? "00:00" : startTime,
+      end_time: isFullDay ? "23:59" : endTime,
+      is_full_day: Boolean(isFullDay),
+      reason: reason?.trim() || "",
+      blocked_by: blockedBy?.trim() || "",
+    })
+    .select()
+    .single()
+
+  if (error) {
+    throw error
+  }
+
+  return normalizeBlockedSlotRecord(data)
+}
+
+export async function removeBlockedSlot(blockedSlotId) {
+  if (!isSupabaseConfigured) {
+    throw new Error("Supabase is not configured.")
+  }
+
+  const { error } = await supabase
+    .from("blocked_slots")
+    .delete()
+    .eq("id", blockedSlotId)
+
+  if (error) {
+    throw error
+  }
 }

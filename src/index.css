@@ -46,11 +46,21 @@ a {
   text-decoration: none;
 }
 
+.bb-button,
 .consultation-button {
-  border: 1px solid #4F8EF7;
-  background: #4F8EF7;
-  color: #ffffff;
-  box-shadow: 0 14px 28px rgba(47, 125, 246, 0.22);
+  display: inline-flex;
+  min-height: 64px;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border: 2px solid transparent;
+  border-radius: 18px;
+  padding: 0 28px;
+  font-family: var(--font-inter);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
   transition:
     transform 180ms ease,
     background-color 180ms ease,
@@ -59,29 +69,112 @@ a {
     box-shadow 180ms ease;
 }
 
+.bb-button:hover,
 .consultation-button:hover {
-  background: #4F8EF7;
-  color: #000000;
-  border-color: #4F8EF7;
-  transform: translateY(-2px);
-  box-shadow: 0 16px 30px rgba(47, 125, 246, 0.24);
+  transform: translateY(-1px);
 }
 
+.bb-button:active,
 .consultation-button:active {
-  background: #ffffff;
-  color: #4F8EF7;
-  border-color: #4F8EF7;
-  transform: translateY(1px);
-  box-shadow:
-    inset 0 3px 8px rgba(30, 42, 82, 0.16),
-    inset 0 -2px 0 rgba(255, 255, 255, 0.9),
-    0 8px 18px rgba(47, 125, 246, 0.14);
+  transform: translateY(0);
 }
 
+.bb-button:disabled,
 .consultation-button:disabled {
   cursor: not-allowed;
   opacity: 0.7;
   transform: none;
+  box-shadow: none;
+}
+
+.bb-button-primary,
+.consultation-button {
+  border-color: #0353A4;
+  background: #0353A4;
+  color: #ffffff;
+  box-shadow: 0 14px 28px rgba(3, 83, 164, 0.18);
+}
+
+.bb-button-primary:hover,
+.consultation-button:hover {
+  border-color: #0466C8;
+  background: #0466C8;
+  color: #ffffff;
+  box-shadow: 0 16px 30px rgba(4, 102, 200, 0.2);
+}
+
+.bb-button-primary:active,
+.consultation-button:active {
+  border-color: #0353A4;
+  background: #0353A4;
+  color: #ffffff;
+}
+
+.bb-button-secondary {
+  border-color: #0353A4;
+  background: #ffffff;
+  color: #0353A4;
+  box-shadow: 0 8px 20px rgba(3, 83, 164, 0.08);
+}
+
+.bb-button-secondary:hover {
+  border-color: #0353A4;
+  background: #0353A4;
+  color: #ffffff;
+  box-shadow: 0 14px 28px rgba(3, 83, 164, 0.16);
+}
+
+.bb-button-outline {
+  border-color: #9BC6F2;
+  background: #ffffff;
+  color: #0353A4;
+  box-shadow: 0 8px 18px rgba(3, 83, 164, 0.06);
+}
+
+.bb-button-outline:hover {
+  border-color: #0353A4;
+  background: #EAF4FF;
+  color: #0353A4;
+  box-shadow: 0 12px 24px rgba(3, 83, 164, 0.12);
+}
+
+.bb-button-whatsapp {
+  border-color: #25D366;
+  background: #25D366;
+  color: #ffffff;
+  box-shadow: 0 14px 28px rgba(37, 211, 102, 0.18);
+}
+
+.bb-button-whatsapp:hover {
+  border-color: #1fb95a;
+  background: #1fb95a;
+  color: #ffffff;
+  box-shadow: 0 16px 30px rgba(37, 211, 102, 0.22);
+}
+
+.bb-button-whatsapp-outline {
+  border-color: rgba(37, 211, 102, 0.55);
+  background: rgba(255, 255, 255, 0.92);
+  color: #1ea952;
+  box-shadow: 0 8px 18px rgba(37, 211, 102, 0.08);
+}
+
+.bb-button-whatsapp-outline:hover {
+  border-color: #25D366;
+  background: #f3fff7;
+  color: #1b9349;
+  box-shadow: 0 10px 22px rgba(37, 211, 102, 0.12);
+}
+
+.bb-button-compact {
+  min-height: 48px;
+  padding: 0 20px;
+  border-radius: 16px;
+  font-size: 14px;
+}
+
+.bb-button-full {
+  width: 100%;
 }
 
 .heading-h1,
@@ -323,23 +416,27 @@ a {
 
 .launch-access-card button {
   width: 100%;
-  height: 62px;
+  min-height: 64px;
   margin-top: 22px;
-  border: 0;
-  border-radius: 14px;
-  background: linear-gradient(100deg, #e91572 0%, #ff4d8e 48%, #ffbd48 100%);
+  border: 2px solid #0353A4;
+  border-radius: 18px;
+  background: #0353A4;
   color: #ffffff;
   font-size: 22px;
   font-weight: 900;
   letter-spacing: 0.03em;
   cursor: pointer;
-  box-shadow: 0 16px 34px rgba(233, 63, 130, 0.35);
-  transition: transform 180ms ease, box-shadow 180ms ease;
+  box-shadow: 0 16px 30px rgba(3, 83, 164, 0.18);
+  transition:
+    transform 180ms ease,
+    background-color 180ms ease,
+    box-shadow 180ms ease;
 }
 
 .launch-access-card button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 20px 42px rgba(233, 63, 130, 0.4);
+  transform: translateY(-1px);
+  background: #0466C8;
+  box-shadow: 0 18px 32px rgba(4, 102, 200, 0.2);
 }
 
 .launch-stage {

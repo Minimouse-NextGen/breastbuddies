@@ -9,7 +9,7 @@ const services = [
     description:
       "Helping expecting mothers and families prepare for a confident breastfeeding journey.",
     image: antenatalSupport,
-    accent: "#4F8EF7",
+    accent: "#0353A4",
     border: "border-[#D6E6FF]",
     background: "bg-white",
     points: [
@@ -24,7 +24,7 @@ const services = [
     description:
       "Supporting mothers and babies through breastfeeding challenges after delivery.",
     image: postpartumSupport,
-    accent: "#FF6B9A",
+    accent: "#FF477E",
     border: "border-[#FFD1DF]",
     background: "bg-[#FFF8FB]",
     points: [
@@ -40,8 +40,8 @@ const services = [
     description:
       "Personalized support for complex feeding situations and special care needs.",
     image: specializedSupport,
-    accent: "#34C38F",
-    border: "border-[#CFF0E5]",
+    accent: "#0353A4",
+    border: "border-[#D6E6FF]",
     background: "bg-white",
     points: [
       "Induced lactation & relactation",
@@ -64,10 +64,10 @@ function Services() {
           <h2 className="heading-h2">
             How I Can Support You
           </h2>
-          <div className="mx-auto mt-3 flex items-center justify-center gap-2 text-[#FF6B9A]">
-            <span className="h-px w-10 bg-[#FFB8CD]" />
+          <div className="mx-auto mt-3 flex items-center justify-center gap-2 text-[#FF477E]">
+            <span className="h-px w-10 bg-[#FF477E]/35" />
             <span className="text-xl leading-none">♥</span>
-            <span className="h-px w-10 bg-[#FFB8CD]" />
+            <span className="h-px w-10 bg-[#FF477E]/35" />
           </div>
         </div>
 

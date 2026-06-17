@@ -1,10 +1,31 @@
+export const BRAND_BLUE = "#0353A4"
+export const BRAND_PINK = "#FF477E"
+export const BRAND_TAGLINE = "Because every mother deserves support."
+
 export function LogoMark({ className = "h-16 w-16" }) {
   return (
     <img
       src="/breastbuddies-logo.png"
-      alt="Lactation Learning Center logo"
+      alt="BreastBuddies logo"
       className={`${className} rounded-full object-contain`}
     />
+  )
+}
+
+export function BrandWordmark({ className = "", sizeClassName = "text-[28px]" }) {
+  return (
+    <span className={`whitespace-nowrap font-playfair font-bold leading-none tracking-normal ${sizeClassName} ${className}`}>
+      <span className="text-[#FF477E]">Breast</span>
+      <span className="text-[#0353A4]">Buddies</span>
+    </span>
+  )
+}
+
+export function BrandTagline({ className = "" }) {
+  return (
+    <span className={className}>
+      {BRAND_TAGLINE}
+    </span>
   )
 }
 
@@ -55,7 +76,7 @@ export function HeroIllustration() {
 }
 
 export function SupportIllustration({ tone = "blue" }) {
-  const stroke = tone === "pink" ? "#FF6B9A" : tone === "green" ? "#34C38F" : "#4F8EF7"
+  const stroke = tone === "pink" ? BRAND_PINK : BRAND_BLUE
   const fill = tone === "pink" ? "#fff1f5" : tone === "green" ? "#ecfdf5" : "#eff6ff"
 
   return (
@@ -71,9 +92,9 @@ export function SupportIllustration({ tone = "blue" }) {
 
 export function ServiceGraphic({ type, className = "h-[150px] w-[150px]" }) {
   const palette = {
-    antenatal: { stroke: "#2f7df6", soft: "#dcebff", leaf: "#9fc3fb", heart: "#bdd7ff" },
-    postpartum: { stroke: "#ff5f8d", soft: "#fff0f5", leaf: "#94bdfb", heart: "#ffc0d0" },
-    specialized: { stroke: "#20b274", soft: "#ecfdf5", leaf: "#a7e2ca", heart: "#b6ead5" },
+    antenatal: { stroke: BRAND_BLUE, soft: "#dcebff", leaf: "#9fc3fb", heart: "#bdd7ff" },
+    postpartum: { stroke: BRAND_PINK, soft: "#fff0f5", leaf: "#94bdfb", heart: "#ffc0d0" },
+    specialized: { stroke: BRAND_BLUE, soft: "#eff6ff", leaf: "#9fc3fb", heart: "#bdd7ff" },
   }[type]
 
   if (type === "specialized") {
@@ -91,7 +112,7 @@ export function ServiceGraphic({ type, className = "h-[150px] w-[150px]" }) {
     return (
       <svg viewBox="0 0 180 150" className={className} fill="none" aria-hidden="true">
         <circle cx="77" cy="66" r="47" fill={palette.soft} />
-        <path d="M76 17c-28 7-42 31-34 62 6 23 28 39 52 34 25-5 40-27 36-51-4-26-27-48-54-45Z" fill="#ff8ca9" opacity="0.8" />
+        <path d="M76 17c-28 7-42 31-34 62 6 23 28 39 52 34 25-5 40-27 36-51-4-26-27-48-54-45Z" fill="#FF477E" opacity="0.72" />
         <path d="M59 56c15 7 34 3 49-14M69 79c11 8 27 7 37-2" stroke={palette.stroke} strokeWidth="4" strokeLinecap="round" />
         <path d="M69 96c-24 5-40 22-43 47h93c-2-24-20-43-50-47Z" fill="#fff" stroke={palette.stroke} strokeWidth="4" strokeLinejoin="round" />
         <path d="M50 98c3-23 20-39 44-38 24 1 39 19 38 43" stroke={palette.stroke} strokeWidth="4" strokeLinecap="round" />
@@ -140,7 +161,7 @@ export function DivyaPortrait() {
   )
 }
 
-export function SmallIcon({ type, className = "h-8 w-8", color = "#2f7df6" }) {
+export function SmallIcon({ type, className = "h-8 w-8", color = BRAND_BLUE }) {
   if (type === "whatsapp") {
     return (
       <img

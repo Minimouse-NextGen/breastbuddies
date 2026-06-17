@@ -1,10 +1,10 @@
 import { SmallIcon } from "./Graphics"
 
 const highlights = [
-  { title: "Advanced\nCertified Lactation\nProfessional", icon: "award", color: "#4F8EF7", bg: "#EFF6FF" },
-  { title: "Antenatal &\nPostpartum Support", icon: "baby", color: "#FF6B9A", bg: "#FFF1F5" },
-  { title: "Online\nConsultations", icon: "online", color: "#4F8EF7", bg: "#EFF6FF" },
-  { title: "Worldwide\nSupport", icon: "location", color: "#4F8EF7", bg: "#EFF6FF" },
+  { title: "Advanced\nCertified Lactation\nProfessional", icon: "award", color: "#0353A4", bg: "#EFF6FF" },
+  { title: "Antenatal &\nPostpartum Support", icon: "baby", color: "#FF477E", bg: "#FFF1F5" },
+  { title: "Online\nConsultations", icon: "online", color: "#0353A4", bg: "#EFF6FF" },
+  { title: "Worldwide\nSupport", icon: "location", color: "#0353A4", bg: "#EFF6FF" },
 ]
 
 function TrustHighlights() {

@@ -161,15 +161,36 @@ function isSlotInsideSelectedRange(slotTime, selectedStartTime, duration) {
   return slotStart > selectedStart && slotStart < selectedEnd
 }
 
-function isSlotDisabledByBooking(slotTime, selectedDate, existingBookedSlots) {
-  return existingBookedSlots.some((booking) => {
-    if (selectedDate && booking.date !== selectedDate) {
+function getConflictingUnavailableEntries(slotTime, selectedDate, unavailableSlots) {
+  return unavailableSlots.filter((slot) => {
+    if (selectedDate && slot.date !== selectedDate) {
       return false
     }
 
-      return getOccupiedSlotStarts(booking.startTime, booking.duration).includes(slotTime)
-    })
+    return getOccupiedSlotStarts(slot.startTime, slot.duration).includes(slotTime)
+  })
+}
+
+function isSlotDisabledByBooking(slotTime, selectedDate, unavailableSlots) {
+  return getConflictingUnavailableEntries(slotTime, selectedDate, unavailableSlots).length > 0
+}
+
+function getConflictType(slotTime, selectedDate, duration, unavailableSlots) {
+  const requestedSlots = getOccupiedSlotStarts(slotTime, duration)
+  const conflicts = requestedSlots.flatMap((requestedSlot) => (
+    getConflictingUnavailableEntries(requestedSlot, selectedDate, unavailableSlots)
+  ))
+
+  if (conflicts.some((conflict) => conflict.source === "blocked_slot")) {
+    return "blocked"
   }
+
+  if (conflicts.length > 0) {
+    return "booked"
+  }
+
+  return null
+}
 
 function isSlotRangeDisabledByBooking(slotTime, selectedDate, duration, existingBookedSlots) {
   const requestedSlots = getOccupiedSlotStarts(slotTime, duration)
@@ -419,7 +440,7 @@ BreastBuddies Website`,
           latestBookedSlots,
         )) {
           setMessageType("error")
-          setMessage("That time slot is no longer available. Please choose another slot.")
+          setMessage("This time slot is not available. Please choose another time.")
           return
         }
       }
@@ -452,7 +473,7 @@ BreastBuddies Website`,
       setMessageType("error")
       setMessage(
         error.code === "23P01"
-          ? "That time slot was just booked. Please choose another slot."
+          ? "This time slot is not available. Please choose another time."
           : "Something went wrong. Please try again or contact us through WhatsApp.",
       )
     } finally {
@@ -476,8 +497,8 @@ BreastBuddies Website`,
 
         <div className="mt-10 grid grid-cols-1 items-start gap-8 lg:grid-cols-12 lg:gap-10">
           <aside className="w-full rounded-3xl border border-sky-300 bg-gradient-to-b from-sky-50 to-[#F4FAFF] p-6 text-[#1E2A52] shadow-lg shadow-sky-900/10 lg:sticky lg:top-28 lg:col-span-4 lg:p-8">
-            <span className="grid h-11 w-11 place-items-center rounded-full border border-sky-200 bg-white text-[#4F8EF7] shadow-sm shadow-sky-900/10">
-              <SmallIcon type="info" color="#4F8EF7" className="h-5 w-5" />
+            <span className="grid h-11 w-11 place-items-center rounded-full border border-sky-200 bg-white text-[#0353A4] shadow-sm shadow-sky-900/10">
+              <SmallIcon type="info" color="#0353A4" className="h-5 w-5" />
             </span>
             <div className="mt-5">
               <p className="font-inter text-base font-bold leading-6 text-[#1E2A52]">
@@ -505,7 +526,7 @@ BreastBuddies Website`,
                 required
                 value={formData.fullName}
                 onChange={(event) => updateField("fullName", event.target.value)}
-                className="mt-2 h-[58px] w-full rounded-lg border border-slate-200 bg-white px-4 font-inter text-[#1E2A52] outline-none transition placeholder:text-slate-400 focus:border-[#4F8EF7] focus:ring-4 focus:ring-sky-100"
+                className="mt-2 h-[58px] w-full rounded-lg border border-slate-200 bg-white px-4 font-inter text-[#1E2A52] outline-none transition placeholder:text-slate-400 focus:border-[#0353A4] focus:ring-4 focus:ring-sky-100"
                 placeholder="Enter your full name"
               />
               {errors.fullName && <p className="mt-2 font-inter text-xs font-semibold text-[#B8325C]">{errors.fullName}</p>}
@@ -521,7 +542,7 @@ BreastBuddies Website`,
                 onChange={(event) => updateMobileNumber(event.target.value)}
                 inputMode="numeric"
                 maxLength="18"
-                className="mt-2 h-[58px] w-full rounded-lg border border-slate-200 bg-white px-4 font-inter text-[#1E2A52] outline-none transition placeholder:text-slate-400 focus:border-[#4F8EF7] focus:ring-4 focus:ring-sky-100"
+                className="mt-2 h-[58px] w-full rounded-lg border border-slate-200 bg-white px-4 font-inter text-[#1E2A52] outline-none transition placeholder:text-slate-400 focus:border-[#0353A4] focus:ring-4 focus:ring-sky-100"
                 placeholder="e.g. +91 98765 43210"
               />
               {errors.mobileNumber && <p className="mt-2 font-inter text-xs font-semibold text-[#B8325C]">{errors.mobileNumber}</p>}
@@ -535,7 +556,7 @@ BreastBuddies Website`,
                 required
                 value={formData.emailAddress}
                 onChange={(event) => updateField("emailAddress", event.target.value)}
-                className="mt-2 h-[58px] w-full rounded-lg border border-slate-200 bg-white px-4 font-inter text-[#1E2A52] outline-none transition placeholder:text-slate-400 focus:border-[#4F8EF7] focus:ring-4 focus:ring-sky-100"
+                className="mt-2 h-[58px] w-full rounded-lg border border-slate-200 bg-white px-4 font-inter text-[#1E2A52] outline-none transition placeholder:text-slate-400 focus:border-[#0353A4] focus:ring-4 focus:ring-sky-100"
                 placeholder="Enter your email"
               />
               {errors.emailAddress && <p className="mt-2 font-inter text-xs font-semibold text-[#B8325C]">{errors.emailAddress}</p>}
@@ -549,7 +570,7 @@ BreastBuddies Website`,
                 required
                 value={formData.babyInfo}
                 onChange={(event) => updateField("babyInfo", event.target.value)}
-                className="mt-2 h-[58px] w-full rounded-lg border border-slate-200 bg-white px-4 font-inter text-[#1E2A52] outline-none transition placeholder:text-slate-400 focus:border-[#4F8EF7] focus:ring-4 focus:ring-sky-100"
+                className="mt-2 h-[58px] w-full rounded-lg border border-slate-200 bg-white px-4 font-inter text-[#1E2A52] outline-none transition placeholder:text-slate-400 focus:border-[#0353A4] focus:ring-4 focus:ring-sky-100"
                 placeholder="e.g. 8 weeks / 3 months"
               />
               {errors.babyInfo && <p className="mt-2 font-inter text-xs font-semibold text-[#B8325C]">{errors.babyInfo}</p>}
@@ -563,7 +584,7 @@ BreastBuddies Website`,
                 required
                 value={formData.primaryConcern}
                 onChange={(event) => updateField("primaryConcern", event.target.value)}
-                className="mt-2 w-full resize-none rounded-lg border border-slate-200 bg-white px-4 py-3.5 font-inter text-[#1E2A52] outline-none transition placeholder:text-slate-400 focus:border-[#4F8EF7] focus:ring-4 focus:ring-sky-100"
+                className="mt-2 w-full resize-none rounded-lg border border-slate-200 bg-white px-4 py-3.5 font-inter text-[#1E2A52] outline-none transition placeholder:text-slate-400 focus:border-[#0353A4] focus:ring-4 focus:ring-sky-100"
                 placeholder="Tell us a little bit about what you're experiencing..."
               />
               {errors.primaryConcern && <p className="mt-2 font-inter text-xs font-semibold text-[#B8325C]">{errors.primaryConcern}</p>}
@@ -574,7 +595,7 @@ BreastBuddies Website`,
               <select
                 name="mode"
                 required
-                className="mt-2 h-[58px] w-full rounded-lg border border-slate-200 bg-white px-4 font-inter text-[#1E2A52] outline-none transition focus:border-[#4F8EF7] focus:ring-4 focus:ring-sky-100"
+                className="mt-2 h-[58px] w-full rounded-lg border border-slate-200 bg-white px-4 font-inter text-[#1E2A52] outline-none transition focus:border-[#0353A4] focus:ring-4 focus:ring-sky-100"
                 value={formData.consultationMode}
                 onChange={(event) => handleConsultationModeChange(event.target.value)}
               >
@@ -593,7 +614,7 @@ BreastBuddies Website`,
               <button
                 type="button"
                 onClick={() => setIsCalendarOpen((current) => !current)}
-                className="mt-2 flex h-[58px] w-full items-center justify-between rounded-xl border border-sky-200 bg-white px-4 text-left font-inter text-[#1E2A52] outline-none transition hover:border-[#4F8EF7] hover:bg-[#F8FBFF] focus:border-[#4F8EF7] focus:ring-4 focus:ring-sky-100"
+                className="mt-2 flex h-[58px] w-full items-center justify-between rounded-xl border border-sky-200 bg-white px-4 text-left font-inter text-[#1E2A52] outline-none transition hover:border-[#0353A4] hover:bg-[#F8FBFF] focus:border-[#0353A4] focus:ring-4 focus:ring-sky-100"
                 aria-expanded={isCalendarOpen}
                 aria-label="Choose preferred date"
               >
@@ -678,9 +699,9 @@ BreastBuddies Website`,
                           }}
                           className={`grid h-10 place-items-center rounded-2xl font-inter text-sm font-semibold transition-all ${
                             isSelected
-                              ? "bg-[#4F8EF7] text-white shadow-lg shadow-blue-500/20"
+                              ? "bg-[#0353A4] text-white shadow-lg shadow-blue-500/20"
                               : item.isCurrentMonth
-                                ? "text-[#1E2A52] hover:bg-[#EAF4FF] hover:text-[#4F8EF7]"
+                                ? "text-[#1E2A52] hover:bg-[#EAF4FF] hover:text-[#0353A4]"
                                 : "text-[#1E2A52]/30 hover:bg-[#F8FBFF]"
                           } ${isPast ? "cursor-not-allowed opacity-30 hover:bg-transparent hover:text-[#1E2A52]/30" : ""}`}
                         >
@@ -725,7 +746,7 @@ BreastBuddies Website`,
                     })
                     setMessage("")
                   }}
-                  className="mt-2 h-[58px] w-full rounded-xl border border-sky-200 bg-white px-4 font-inter text-[#1E2A52] outline-none transition focus:border-[#4F8EF7] focus:ring-4 focus:ring-sky-100"
+                  className="mt-2 h-[58px] w-full rounded-xl border border-sky-200 bg-white px-4 font-inter text-[#1E2A52] outline-none transition focus:border-[#0353A4] focus:ring-4 focus:ring-sky-100"
                 >
                   <option value="" disabled>
                     Select duration
@@ -749,7 +770,7 @@ BreastBuddies Website`,
                   </p>
                 </div>
                 <div className="rounded-2xl bg-white px-4 py-3 text-left shadow-sm shadow-sky-900/5 sm:text-right">
-                  <p className="font-inter text-xs font-semibold uppercase tracking-[0.16em] text-[#4F8EF7]">
+                  <p className="font-inter text-xs font-semibold uppercase tracking-[0.16em] text-[#0353A4]">
                     SELECTION
                   </p>
                   <p className="mt-1 font-inter text-sm font-semibold text-[#1E2A52]">
@@ -768,6 +789,12 @@ BreastBuddies Website`,
                   {timeSlots.map((slot) => {
                     const isSelected = formData.preferredTimeSlot === slot
                     const durationMinutes = getDurationMinutes(formData.consultationDuration)
+                    const conflictType = getConflictType(
+                      slot,
+                      formData.preferredDate,
+                      durationMinutes,
+                      bookedSlots,
+                    )
                     const isBooked = isSlotDisabledByBooking(
                       slot,
                       formData.preferredDate,
@@ -808,10 +835,10 @@ BreastBuddies Website`,
                         }}
                         className={`group rounded-2xl border px-4 py-3 text-left font-inter transition-all duration-300 ${
                           isSelected
-                            ? "border-[#4F8EF7] bg-[#EAF4FF] text-[#1E2A52] shadow-md shadow-blue-500/10"
+                            ? "border-[#0353A4] bg-[#EAF4FF] text-[#1E2A52] shadow-md shadow-blue-500/10"
                             : isBooked || isIncluded || isUnavailable || isRangeBooked
                               ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400 opacity-70"
-                            : "border-sky-100 bg-white text-[#1E2A52]/80 hover:-translate-y-0.5 hover:border-[#4F8EF7] hover:bg-white hover:shadow-md hover:shadow-sky-900/5"
+                            : "border-sky-100 bg-white text-[#1E2A52]/80 hover:-translate-y-0.5 hover:border-[#0353A4] hover:bg-white hover:shadow-md hover:shadow-sky-900/5"
                         }`}
                         aria-pressed={isSelected}
                       >
@@ -819,14 +846,16 @@ BreastBuddies Website`,
                         <span
                           className={`mt-1 block text-xs font-medium ${
                             isSelected
-                              ? "text-[#4F8EF7]"
+                              ? "text-[#0353A4]"
                               : isBooked || isIncluded || isUnavailable || isRangeBooked
                                 ? "text-slate-400"
-                                : "text-[#1E2A52]/55 group-hover:text-[#4F8EF7]"
+                                : "text-[#1E2A52]/55 group-hover:text-[#0353A4]"
                           }`}
                         >
                           {isBooked || isRangeBooked
-                            ? "Booked"
+                            ? conflictType === "blocked"
+                              ? "Not available"
+                              : "Booked"
                             : isIncluded
                               ? "Included"
                               : isUnavailable
@@ -861,7 +890,7 @@ BreastBuddies Website`,
           <button
             type="submit"
             disabled={isSending}
-            className="consultation-button mt-7 w-full rounded-lg px-7 py-4 font-inter font-semibold"
+            className="bb-button bb-button-primary bb-button-full mt-7"
           >
             {isSending ? "Sending Request..." : "Request Consultation"}
           </button>
