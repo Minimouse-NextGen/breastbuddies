@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { Navigate, Route, Routes } from "react-router-dom"
+import { Navigate, Route, Routes, useLocation } from "react-router-dom"
 import AboutDivya from "./components/AboutDivya"
 import BookingForm from "./components/BookingForm"
 import FloatingWhatsApp from "./components/FloatingWhatsApp"
@@ -13,8 +13,50 @@ import AdminDashboard from "./pages/AdminDashboard"
 import AdminLogin from "./pages/AdminLogin"
 import { verifyAdminAccess } from "./services/adminAccess"
 import { isSupabaseConfigured, supabase } from "./services/supabaseClient"
+import { getSectionIdFromPathname } from "./utils/sectionRoutes"
+
+function GalleryPlaceholder() {
+  return (
+    <section id="gallery" className="bg-white px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
+      <div className="section-frame">
+        <div className="rounded-3xl border border-[#DDE8F7] bg-[#F8FBFF] px-6 py-10 text-center shadow-[0_12px_30px_rgba(30,42,82,0.07)] sm:px-8">
+          <h2 className="heading-h2">Gallery</h2>
+          <p className="mx-auto mt-4 max-w-2xl font-inter text-base leading-7 text-[#1E2A52]/80">
+            Gallery updates are coming soon. Please explore the rest of the site or book a consultation.
+          </p>
+        </div>
+      </div>
+    </section>
+  )
+}
 
 function WebsitePage() {
+  const location = useLocation()
+  const activeSection = getSectionIdFromPathname(location.pathname) ?? "top"
+  const shouldShowGalleryPlaceholder = activeSection === "gallery"
+
+  useEffect(() => {
+    const sectionId = getSectionIdFromPathname(location.pathname) ?? "top"
+
+    const scrollToTarget = () => {
+      if (sectionId === "top") {
+        window.scrollTo({ top: 0, behavior: "smooth" })
+        return
+      }
+
+      const section = document.getElementById(sectionId)
+      if (section) {
+        section.scrollIntoView({ behavior: "smooth", block: "start" })
+      }
+    }
+
+    const frameId = window.requestAnimationFrame(scrollToTarget)
+
+    return () => {
+      window.cancelAnimationFrame(frameId)
+    }
+  }, [location.pathname])
+
   return (
     <div className="site-shell font-inter text-[#1E2A52]">
       <Header />
@@ -23,6 +65,7 @@ function WebsitePage() {
         <TrustHighlights />
         <AboutDivya />
         <Services />
+        {shouldShowGalleryPlaceholder ? <GalleryPlaceholder /> : null}
         <BookingForm />
       </main>
       <Footer />
@@ -109,6 +152,12 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<WebsitePage />} />
+      <Route path="/home" element={<WebsitePage />} />
+      <Route path="/about" element={<WebsitePage />} />
+      <Route path="/about-divya" element={<WebsitePage />} />
+      <Route path="/services" element={<WebsitePage />} />
+      <Route path="/gallery" element={<WebsitePage />} />
+      <Route path="/book-consultation" element={<WebsitePage />} />
       <Route
         path="/admin/login"
         element={<AdminLogin session={session} />}

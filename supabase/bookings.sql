@@ -232,6 +232,42 @@ begin
   end if;
 end $$;
 
+create or replace function public.sync_admin_profile_from_auth_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public, auth
+as $$
+begin
+  if lower(coalesce(new.email, '')) in ('divya.us@gmail.com', 'support@minimousenextgen.com') then
+    insert into public.admin_profiles (user_id, email, role)
+    values (new.id, lower(new.email), 'admin')
+    on conflict (user_id) do update
+      set email = excluded.email,
+          role = 'admin';
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists sync_admin_profile_from_auth_user on auth.users;
+create trigger sync_admin_profile_from_auth_user
+  after insert or update of email on auth.users
+  for each row
+  execute function public.sync_admin_profile_from_auth_user();
+
+insert into public.admin_profiles (user_id, email, role)
+select
+  users.id,
+  lower(users.email),
+  'admin'
+from auth.users as users
+where lower(coalesce(users.email, '')) in ('divya.us@gmail.com', 'support@minimousenextgen.com')
+on conflict (user_id) do update
+  set email = excluded.email,
+      role = 'admin';
+
 create or replace function public.set_updated_at()
 returns trigger
 language plpgsql

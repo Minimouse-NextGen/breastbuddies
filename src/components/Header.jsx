@@ -1,63 +1,44 @@
-import { useEffect, useState } from "react"
-import { BrandTagline, BrandWordmark, LogoMark, SmallIcon } from "./Graphics"
-import { scrollToSection } from "../utils/scrollToSection"
-
-const navItems = [
-  { label: "Home", id: "top" },
-  { label: "About Divya", id: "about" },
-  { label: "Services", id: "services" },
-  { label: "Gallery", id: "gallery" },
-  { label: "Book Consultation", id: "booking" },
-]
-
-const whatsappLink = "https://wa.me/917299788877?text=Hello%20BreastBuddies%2C%20I%20would%20like%20to%20book%20a%20lactation%20consultation."
+import { useState } from "react"
+import { Link, useLocation, useNavigate } from "react-router-dom"
+import { BrandTagline, BrandWordmark, LogoMark } from "./Graphics"
+import { getSectionIdFromPathname, navItems, normalizePathname } from "../utils/sectionRoutes"
 
 function Header() {
-  const [activeSection, setActiveSection] = useState("top")
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const location = useLocation()
+  const navigate = useNavigate()
+  const activeSection = getSectionIdFromPathname(location.pathname) ?? "top"
 
-  useEffect(() => {
-    const sectionIds = navItems.map((item) => item.id)
-
-    function updateActiveSection() {
-      const scrollPosition = window.scrollY + 120
-      let nextActiveSection = "top"
-
-      for (const sectionId of sectionIds) {
-        const section = document.getElementById(sectionId)
-
-        if (!section) {
-          continue
-        }
-
-        if (scrollPosition >= section.offsetTop) {
-          nextActiveSection = sectionId
-        }
-      }
-
-      setActiveSection(nextActiveSection)
+  function scrollToSectionId(sectionId) {
+    if (sectionId === "top") {
+      window.scrollTo({ top: 0, behavior: "smooth" })
+      return
     }
 
-    updateActiveSection()
-    window.addEventListener("scroll", updateActiveSection, { passive: true })
-
-    return () => {
-      window.removeEventListener("scroll", updateActiveSection)
+    const section = document.getElementById(sectionId)
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth", block: "start" })
     }
-  }, [])
+  }
 
-  function handleSectionClick(event, sectionId) {
-    scrollToSection(event, sectionId)
-    setActiveSection(sectionId)
+  function handleSectionClick(event, item) {
+    event.preventDefault()
     setIsMenuOpen(false)
+
+    if (normalizePathname(location.pathname) === item.path) {
+      scrollToSectionId(item.id)
+      return
+    }
+
+    navigate(item.path)
   }
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-sky-100 bg-white shadow-sm shadow-sky-900/5">
       <div className="mx-auto flex min-h-[76px] w-full max-w-7xl items-center justify-between gap-3 px-4 py-2.5 sm:px-6 lg:gap-6 lg:px-8">
-        <a
-          href="/"
-          onClick={(event) => handleSectionClick(event, "top")}
+        <Link
+          to="/"
+          onClick={(event) => handleSectionClick(event, navItems[0])}
           className="flex min-w-0 items-center gap-3 sm:gap-4"
           aria-label="breastbuddies home"
         >
@@ -66,14 +47,14 @@ function Header() {
             <BrandWordmark className="block" sizeClassName="text-[25px] sm:text-[34px]" />
             <BrandTagline className="mt-1 block max-w-[280px] font-inter text-[11.5px] font-semibold leading-[1.3] text-[#FF477E] sm:max-w-none sm:text-[13px]" />
           </span>
-        </a>
+        </Link>
 
         <nav className="hidden flex-1 items-center justify-center gap-3 font-inter text-[15px] font-semibold text-[#1E2A52] lg:flex xl:gap-4">
           {navItems.map((item) => (
-            <a
+            <Link
               key={item.id}
-              href={item.id === "top" ? "/" : `/#${item.id}`}
-              onClick={(event) => handleSectionClick(event, item.id)}
+              to={item.path}
+              onClick={(event) => handleSectionClick(event, item)}
               className={`inline-flex min-h-[44px] items-center justify-center rounded-xl px-4 text-center leading-none transition ${
                 activeSection === item.id
                   ? "bg-[#EAF4FF] text-[#0353A4]"
@@ -81,29 +62,9 @@ function Header() {
               }`}
             >
               {item.label}
-            </a>
+            </Link>
           ))}
         </nav>
-
-        <div className="hidden shrink-0 items-center gap-5 md:flex">
-          <a
-            href={whatsappLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bb-button bb-button-whatsapp-outline hidden min-w-[210px] xl:flex"
-          >
-            <SmallIcon type="whatsapp" color="#25D366" className="h-4 w-4" />
-            Chat on WhatsApp
-          </a>
-          <a
-            href="/#booking"
-            onClick={(event) => handleSectionClick(event, "booking")}
-            className="bb-button bb-button-primary"
-          >
-            Book Consultation
-          </a>
-        </div>
-
         <button
           type="button"
           className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-sky-100 bg-white text-[#1E2A52] shadow-sm shadow-sky-900/5 lg:hidden"
@@ -127,10 +88,10 @@ function Header() {
         <div className="border-t border-sky-100 bg-white px-4 pb-4 shadow-lg shadow-sky-900/5 lg:hidden">
           <nav className="grid gap-2 pt-3 font-inter text-sm font-semibold text-[#1E2A52]" aria-label="Mobile navigation">
             {navItems.map((item) => (
-              <a
+              <Link
                 key={item.id}
-                href={item.id === "top" ? "/" : `/#${item.id}`}
-                onClick={(event) => handleSectionClick(event, item.id)}
+                to={item.path}
+                onClick={(event) => handleSectionClick(event, item)}
                 className={`rounded-xl px-4 py-3 ${
                   activeSection === item.id
                     ? "bg-[#EAF4FF] text-[#0353A4]"
@@ -138,18 +99,9 @@ function Header() {
                 }`}
               >
                 {item.label}
-              </a>
+              </Link>
             ))}
           </nav>
-          <a
-            href={whatsappLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bb-button bb-button-whatsapp-outline bb-button-full mt-3"
-          >
-            <SmallIcon type="whatsapp" color="#25D366" className="h-4 w-4" />
-            Chat on WhatsApp
-          </a>
         </div>
       )}
     </header>
