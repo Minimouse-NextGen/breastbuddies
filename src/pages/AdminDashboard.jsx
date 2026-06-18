@@ -27,6 +27,31 @@ const availabilityMonthNames = [
   "November",
   "December",
 ]
+const availabilityTimeSlots = [
+  "09:00 AM",
+  "09:30 AM",
+  "10:00 AM",
+  "10:30 AM",
+  "11:00 AM",
+  "11:30 AM",
+  "12:00 PM",
+  "12:30 PM",
+  "02:00 PM",
+  "02:30 PM",
+  "03:00 PM",
+  "03:30 PM",
+  "04:00 PM",
+  "04:30 PM",
+  "05:00 PM",
+  "05:30 PM",
+  "06:00 PM",
+  "06:30 PM",
+  "07:00 PM",
+  "07:30 PM",
+  "08:00 PM",
+  "08:30 PM",
+  "09:00 PM",
+]
 
 const allowedStatusTransitions = {
   pending: ["pending", "confirmed", "cancelled"],
@@ -124,6 +149,21 @@ function formatTimeRange(startTime, endTime, isFullDay = false) {
   }
 
   return `${formatTimeForSelect(startTime)} - ${formatTimeForSelect(endTime)}`
+}
+
+function toDatabaseTimeValue(timeValue) {
+  if (!timeValue) {
+    return ""
+  }
+
+  if (!timeValue.includes("AM") && !timeValue.includes("PM")) {
+    return timeValue
+  }
+
+  const [time, period] = timeValue.split(" ")
+  const [rawHour, rawMinute] = time.split(":").map(Number)
+  const hour24 = period === "PM" && rawHour !== 12 ? rawHour + 12 : period === "AM" && rawHour === 12 ? 0 : rawHour
+  return `${String(hour24).padStart(2, "0")}:${String(rawMinute).padStart(2, "0")}`
 }
 
 function convertTimeValueToMinutes(timeValue) {
@@ -352,6 +392,7 @@ function ActionIcon({ type, className = "h-5 w-5" }) {
 function AdminDashboard({ session }) {
   const navigate = useNavigate()
   const blockFormRef = useRef(null)
+  const profileMenuRef = useRef(null)
   const [bookings, setBookings] = useState([])
   const [blockedSlots, setBlockedSlots] = useState([])
   const [message, setMessage] = useState("")
@@ -369,6 +410,7 @@ function AdminDashboard({ session }) {
   const [blockedSlotsFilter, setBlockedSlotsFilter] = useState("upcoming")
   const [activeView, setActiveView] = useState("manage-availability")
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
   const [blockForm, setBlockForm] = useState({
     blockDate: "",
     startTime: "",
@@ -420,6 +462,15 @@ function AdminDashboard({ session }) {
     [blockedSlots, selectedDateForAvailability],
   )
 
+  const availableEndTimeOptions = useMemo(() => {
+    if (!blockForm.startTime) {
+      return availabilityTimeSlots
+    }
+
+    const startMinutes = convertTimeValueToMinutes(blockForm.startTime)
+    return availabilityTimeSlots.filter((slot) => convertTimeValueToMinutes(slot) > startMinutes)
+  }, [blockForm.startTime])
+
   const filteredBlockedSlots = useMemo(() => {
     const sortedSlots = [...blockedSlots].sort((left, right) => (
       left.block_date.localeCompare(right.block_date)
@@ -464,7 +515,11 @@ function AdminDashboard({ session }) {
         }
       } catch (error) {
         if (isMounted) {
-          setMessage(error.message || "Unable to load dashboard data.")
+          setMessage(
+            error.message?.includes("public.blocked_slots")
+              ? "Could not find the table 'public.blocked_slots' in the schema cache. Create the blocked_slots table in Supabase by running supabase/bookings.sql or the blocked_slots migration."
+              : error.message || "Unable to load dashboard data.",
+          )
         }
       } finally {
         if (isMounted) {
@@ -479,6 +534,20 @@ function AdminDashboard({ session }) {
       isMounted = false
     }
   }, [session, today])
+
+  useEffect(() => {
+    function handlePointerDown(event) {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setIsProfileMenuOpen(false)
+      }
+    }
+
+    document.addEventListener("mousedown", handlePointerDown)
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown)
+    }
+  }, [])
 
   if (!session) {
     return <Navigate to="/admin/login" replace />
@@ -502,6 +571,9 @@ function AdminDashboard({ session }) {
     setBlockForm((current) => ({
       ...current,
       [field]: value,
+      ...(field === "startTime" && current.endTime && convertTimeValueToMinutes(current.endTime) <= convertTimeValueToMinutes(value)
+        ? { endTime: "" }
+        : {}),
     }))
   }
 
@@ -556,8 +628,8 @@ function AdminDashboard({ session }) {
       return
     }
 
-    const nextStartTime = blockForm.isFullDay ? "00:00" : blockForm.startTime
-    const nextEndTime = blockForm.isFullDay ? "23:59" : blockForm.endTime
+    const nextStartTime = blockForm.isFullDay ? "00:00" : toDatabaseTimeValue(blockForm.startTime)
+    const nextEndTime = blockForm.isFullDay ? "23:59" : toDatabaseTimeValue(blockForm.endTime)
 
     if (!blockForm.isFullDay && convertTimeValueToMinutes(nextEndTime) <= convertTimeValueToMinutes(nextStartTime)) {
       setMessage("End time must be after start time.")
@@ -623,7 +695,8 @@ function AdminDashboard({ session }) {
 
   async function handleSignOut() {
     await supabase.auth.signOut()
-    navigate("/admin/login", { replace: true })
+    setIsProfileMenuOpen(false)
+    navigate("/", { replace: true })
   }
 
   function handleSidebarSelect(itemId) {
@@ -638,12 +711,12 @@ function AdminDashboard({ session }) {
   function renderSidebarInner({ onClose } = {}) {
     return (
       <>
-        <div className="flex h-[88px] items-center justify-between border-b border-[#E2E8F0] px-6">
+        <div className="flex min-h-[72px] items-center justify-between border-b border-[#E2E8F0] px-4 py-4">
           <div className="flex items-center gap-3">
-            <div className="grid h-11 w-11 place-items-center rounded-full border border-[#E2E8F0] bg-white">
-              <img src="/favicon.png" alt="BreastBuddies logo" className="h-8 w-8 rounded-full object-cover" />
+            <div className="grid h-9 w-9 place-items-center rounded-full border border-[#E2E8F0] bg-white">
+              <img src="/favicon.png" alt="BreastBuddies logo" className="h-6 w-6 rounded-full object-cover" />
             </div>
-            <div className="font-playfair text-[24px] font-bold leading-none">
+            <div className="min-w-0 font-playfair text-[20px] font-bold leading-none">
               <span className="text-[#FF477E]">Breast</span>
               <span className="text-[#0353A4]">Buddies</span>
             </div>
@@ -660,8 +733,8 @@ function AdminDashboard({ session }) {
           ) : null}
         </div>
 
-        <div className="flex-1 overflow-y-auto px-4 py-6">
-          <nav className="space-y-2" aria-label="Admin navigation">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden px-0 py-3 [box-sizing:border-box]">
+          <nav className="space-y-1.5" aria-label="Admin navigation">
             {sidebarSections.map((item) => {
               const isCalendarGroup = item.id === "calendar"
               const isItemActive = item.id === "dashboard"
@@ -675,25 +748,25 @@ function AdminDashboard({ session }) {
                   <button
                     type="button"
                     onClick={() => handleSidebarSelect(item.id)}
-                    className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-[15px] font-semibold transition ${
+                    className={`flex h-11 w-full items-center gap-3 rounded-[12px] px-3 text-left text-[14px] font-semibold transition ${
                       isItemActive
                         ? "bg-[#EEF5FF] text-[#0353A4]"
                         : "text-[#0F172A] hover:bg-[#F8FAFC]"
                     }`}
                   >
-                    <span className={`grid h-9 w-9 place-items-center rounded-xl ${isItemActive ? "bg-white text-[#0353A4]" : "text-[#64748B]"}`}>
+                    <span className={`grid h-6 w-6 min-w-6 place-items-center ${isItemActive ? "text-[#0353A4]" : "text-[#64748B]"}`}>
                       <SidebarIcon type={item.icon} />
                     </span>
-                    <span className="flex-1">{item.label}</span>
+                    <span className="min-w-0 flex-1 whitespace-nowrap">{item.label}</span>
                     {item.children ? (
-                      <span className={`${isItemActive ? "text-[#0353A4]" : "text-[#94A3B8]"}`}>
+                      <span className={`shrink-0 ${isItemActive ? "text-[#0353A4]" : "text-[#94A3B8]"}`}>
                         <ActionIcon type="chevron-down" className="h-4 w-4" />
                       </span>
                     ) : null}
                   </button>
 
                   {item.children ? (
-                    <div className="mt-2 space-y-1 pl-[56px]">
+                    <div className="mt-1 space-y-1 pl-9">
                       {item.children.map((child) => {
                         const isChildActive = child.id === "manage-availability"
                           ? activeView === "manage-availability"
@@ -704,14 +777,13 @@ function AdminDashboard({ session }) {
                             key={child.id}
                             type="button"
                             onClick={() => handleSidebarSelect(child.id)}
-                            className={`flex w-full items-center gap-3 rounded-2xl px-4 py-2.5 text-left text-[15px] font-medium transition ${
+                            className={`flex h-10 w-full items-center rounded-[12px] px-3 text-left text-[12px] font-medium transition ${
                               isChildActive
                                 ? "bg-[#EEF5FF] text-[#0353A4]"
                                 : "text-[#334155] hover:bg-[#F8FAFC]"
                             }`}
                           >
-                            <span className={`h-2 w-2 rounded-full ${isChildActive ? "bg-[#0353A4]" : "bg-[#CBD5E1]"}`} />
-                            <span>{child.label}</span>
+                            <span className="min-w-0 whitespace-nowrap">{child.label}</span>
                           </button>
                         )
                       })}
@@ -722,38 +794,13 @@ function AdminDashboard({ session }) {
             })}
           </nav>
         </div>
-
-        <div className="p-4">
-          <div className="rounded-[24px] border border-[#E2E8F0] bg-[#FFFFFF] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
-            <div className="grid h-11 w-11 place-items-center rounded-full bg-[#EEF5FF] text-[#0353A4]">
-              <span className="text-xl font-bold">?</span>
-            </div>
-            <h3 className="mt-4 text-xl font-semibold text-[#0F172A]">Need Help?</h3>
-            <p className="mt-2 text-sm leading-6 text-[#64748B]">
-              Learn how to manage availability and calendar updates from the admin panel.
-            </p>
-            <button
-              type="button"
-              className="mt-5 inline-flex h-11 items-center justify-center rounded-xl border border-[#0353A4] px-4 text-sm font-semibold text-[#0353A4] transition hover:bg-[#EEF5FF]"
-            >
-              View Guide
-            </button>
-            <button
-              type="button"
-              onClick={handleSignOut}
-              className="mt-3 inline-flex h-11 items-center justify-center rounded-xl border border-[#E2E8F0] px-4 text-sm font-semibold text-[#334155] transition hover:bg-[#F8FAFC]"
-            >
-              Sign Out
-            </button>
-          </div>
-        </div>
       </>
     )
   }
 
   function renderSidebar() {
     return (
-      <aside className="flex h-full w-full max-w-[256px] flex-col border-r border-[#E2E8F0] bg-white">
+      <aside className="flex h-[100dvh] w-[280px] min-w-[280px] shrink-0 flex-col overflow-y-auto overflow-x-hidden border-r border-[#E2E8F0] bg-white p-3 [box-sizing:border-box]">
         {renderSidebarInner()}
       </aside>
     )
@@ -761,7 +808,7 @@ function AdminDashboard({ session }) {
 
   function renderTopBar() {
     return (
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-2.5 md:flex-row md:items-center md:justify-between">
         {activeView === "manage-availability" ? (
           <button
             type="button"
@@ -775,17 +822,38 @@ function AdminDashboard({ session }) {
           <div className="text-sm font-medium text-[#64748B]">Admin Dashboard</div>
         )}
 
-        <div className="flex items-center justify-between gap-4 rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3 shadow-[0_6px_20px_rgba(15,23,42,0.04)] md:min-w-[220px] md:justify-end">
-          <div className="grid h-11 w-11 place-items-center rounded-full bg-[#EEF5FF] text-sm font-bold text-[#1E3A8A]">
-            {profileInitials}
-          </div>
-          <div className="text-left">
-            <p className="text-[16px] font-semibold leading-none text-[#0F172A]">{profileName}</p>
-            <p className="mt-1 text-sm text-[#64748B]">{profileRole}</p>
-          </div>
-          <span className="text-[#64748B]">
-            <ActionIcon type="chevron-down" className="h-4 w-4" />
-          </span>
+        <div ref={profileMenuRef} className="relative">
+          <button
+            type="button"
+            onClick={() => setIsProfileMenuOpen((current) => !current)}
+            className="flex items-center justify-between gap-3 rounded-2xl border border-[#E2E8F0] bg-white px-3.5 py-2 shadow-[0_6px_20px_rgba(15,23,42,0.04)] md:min-w-[208px] md:justify-end"
+            aria-expanded={isProfileMenuOpen}
+            aria-haspopup="menu"
+          >
+            <div className="grid h-10 w-10 place-items-center rounded-full bg-[#EEF5FF] text-sm font-bold text-[#1E3A8A]">
+              {profileInitials}
+            </div>
+            <div className="text-left">
+              <p className="text-[15px] font-semibold leading-none text-[#0F172A]">{profileName}</p>
+              <p className="mt-1 text-xs text-[#64748B]">{profileRole}</p>
+            </div>
+            <span className="text-[#64748B]">
+              <ActionIcon type="chevron-down" className="h-4 w-4" />
+            </span>
+          </button>
+
+          {isProfileMenuOpen ? (
+            <div className="absolute right-0 top-[calc(100%+8px)] z-20 min-w-[180px] overflow-hidden rounded-2xl border border-[#E2E8F0] bg-white py-1.5 shadow-[0_14px_32px_rgba(15,23,42,0.12)]">
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className="flex h-10 w-full items-center px-4 text-left text-sm font-medium text-[#334155] transition hover:bg-[#F8FAFC]"
+                role="menuitem"
+              >
+                Sign Out
+              </button>
+            </div>
+          ) : null}
         </div>
       </div>
     )
@@ -794,51 +862,51 @@ function AdminDashboard({ session }) {
   function renderManageAvailability() {
     return (
       <>
-        <section className="rounded-[24px] border border-[#E2E8F0] bg-white p-6 shadow-[0_12px_32px_rgba(15,23,42,0.05)] md:p-7">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+        <section className="rounded-[16px] border border-[#E2E8F0] bg-white p-[18px] shadow-[0_12px_32px_rgba(15,23,42,0.05)]">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
-              <h1 className="text-[28px] font-bold tracking-[-0.02em] text-[#0F172A] md:text-[38px]">Manage Availability</h1>
-              <p className="mt-2 max-w-2xl text-[15px] leading-7 text-[#64748B]">
+              <h1 className="text-[24px] font-bold tracking-[-0.02em] text-[#0F172A] md:text-[30px]">Manage Availability</h1>
+              <p className="mt-1 max-w-2xl text-[13px] leading-5 text-[#64748B]">
                 Block specific dates and time slots. Changes are reflected in real-time on the website.
               </p>
             </div>
             <button
               type="button"
               onClick={scrollToBlockForm}
-              className="inline-flex h-12 items-center justify-center gap-3 rounded-xl bg-[#0353A4] px-5 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(3,83,164,0.18)] transition hover:bg-[#02427f]"
+              className="inline-flex h-11 items-center justify-center gap-3 rounded-xl bg-[#0353A4] px-4 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(3,83,164,0.18)] transition hover:bg-[#02427f]"
             >
               <ActionIcon type="calendar-plus" className="h-5 w-5" />
               <span>Block Date / Time</span>
             </button>
           </div>
 
-          <div className="mt-8 grid gap-6 xl:grid-cols-[1.03fr_1.25fr]">
-            <article className="rounded-[20px] border border-[#E2E8F0] bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] md:p-6">
+          <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(360px,0.9fr)_minmax(420px,1.1fr)] lg:items-start">
+            <article className="rounded-[16px] border border-[#E2E8F0] bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)] lg:max-h-[420px]">
               <div className="flex items-center justify-between">
                 <button
                   type="button"
                   onClick={() => setAvailabilityMonth((current) => new Date(current.getFullYear(), current.getMonth() - 1, 1))}
-                  className="grid h-10 w-10 place-items-center rounded-full text-[#0F172A] transition hover:bg-[#F8FAFC]"
+                  className="grid h-8 w-8 place-items-center rounded-full text-[#0F172A] transition hover:bg-[#F8FAFC]"
                   aria-label="Previous month"
                 >
                   <ActionIcon type="arrow-left" className="h-5 w-5" />
                 </button>
-                <h2 className="text-[22px] font-semibold text-[#0F172A]">
+                <h2 className="text-[19px] font-semibold text-[#0F172A]">
                   {availabilityMonthNames[availabilityMonth.getMonth()]} {availabilityMonth.getFullYear()}
                 </h2>
                 <button
                   type="button"
                   onClick={() => setAvailabilityMonth((current) => new Date(current.getFullYear(), current.getMonth() + 1, 1))}
-                  className="grid h-10 w-10 place-items-center rounded-full text-[#0F172A] transition hover:bg-[#F8FAFC]"
+                  className="grid h-8 w-8 place-items-center rounded-full text-[#0F172A] transition hover:bg-[#F8FAFC]"
                   aria-label="Next month"
                 >
                   <ActionIcon type="arrow-right" className="h-5 w-5" />
                 </button>
               </div>
 
-              <div className="mt-7 grid grid-cols-7 gap-y-4 text-center">
+              <div className="mt-4 grid grid-cols-7 gap-x-1 gap-y-1.5 text-center">
                 {availabilityWeekdays.map((day) => (
-                  <div key={day} className="text-sm font-semibold text-[#1E3A8A]">{day}</div>
+                  <div key={day} className="text-xs font-semibold text-[#1E3A8A]">{day}</div>
                 ))}
 
                 {availabilityCalendarDays.map((day) => {
@@ -850,7 +918,7 @@ function AdminDashboard({ session }) {
                       key={day.inputValue}
                       type="button"
                       onClick={() => handleAvailabilityDateSelect(day.inputValue)}
-                      className={`relative mx-auto grid h-11 w-11 place-items-center rounded-full text-base font-medium transition ${
+                      className={`relative mx-auto grid h-8 w-8 place-items-center rounded-full text-[13px] font-medium transition ${
                         isSelected
                           ? "bg-[#0353A4] text-white shadow-[0_12px_28px_rgba(3,83,164,0.28)]"
                           : day.isCurrentMonth
@@ -861,7 +929,7 @@ function AdminDashboard({ session }) {
                       <span>{day.day}</span>
                       {!isSelected && dayStatus !== "available" ? (
                         <span
-                          className={`absolute bottom-1.5 h-1.5 w-1.5 rounded-full ${
+                          className={`absolute bottom-1 h-1.5 w-1.5 rounded-full ${
                             dayStatus === "full" ? "bg-[#FB7185]" : "bg-[#F59E0B]"
                           }`}
                         />
@@ -871,62 +939,70 @@ function AdminDashboard({ session }) {
                 })}
               </div>
 
-              <div className="mt-8 flex flex-wrap items-center gap-6 text-sm text-[#334155]">
+              <div className="mt-5 flex flex-wrap items-center gap-3 pb-4 text-[11px] text-[#334155]">
                 <div className="inline-flex items-center gap-2">
-                  <span className="h-5 w-5 rounded-md bg-[#DCFCE7]" />
+                  <span className="h-4 w-4 rounded-md bg-[#DCFCE7]" />
                   <span>Available</span>
                 </div>
                 <div className="inline-flex items-center gap-2">
-                  <span className="h-5 w-5 rounded-md bg-[#FEF3C7]" />
+                  <span className="h-4 w-4 rounded-md bg-[#FEF3C7]" />
                   <span>Partially Blocked</span>
                 </div>
                 <div className="inline-flex items-center gap-2">
-                  <span className="h-5 w-5 rounded-md bg-[#FEE2E2]" />
+                  <span className="h-4 w-4 rounded-md bg-[#FEE2E2]" />
                   <span>Fully Blocked</span>
                 </div>
               </div>
             </article>
 
-            <article ref={blockFormRef} className="overflow-hidden rounded-[20px] border border-[#E2E8F0] bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
-              <div className="border-b border-[#E2E8F0] px-6 py-5">
-                <h2 className="text-[18px] font-semibold text-[#1E3A8A]">Block Date / Time</h2>
+            <article ref={blockFormRef} className="overflow-hidden rounded-[16px] border border-[#E2E8F0] bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
+              <div className="border-b border-[#E2E8F0] px-4 py-3">
+                <h2 className="text-[17px] font-semibold text-[#1E3A8A]">Block Date / Time</h2>
               </div>
 
-              <form className="px-6 py-5" onSubmit={handleCreateBlockedSlot}>
-                <div className="grid gap-5 md:grid-cols-2">
-                  <label className="block md:col-span-2">
-                    <span className="text-sm font-medium text-[#0F172A]">Date</span>
-                    <input
-                      type="date"
-                      value={blockForm.blockDate}
-                      onChange={(event) => updateBlockField("blockDate", event.target.value)}
-                      className="mt-2 h-11 w-full rounded-xl border border-[#E2E8F0] bg-white px-4 text-sm text-[#0F172A] outline-none transition focus:border-[#0353A4] focus:ring-4 focus:ring-[#DCEBFF]"
-                      required
-                    />
-                  </label>
+              <form className="px-4 py-3.5" onSubmit={handleCreateBlockedSlot}>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="md:col-span-2">
+                    <span className="text-sm font-medium text-[#0F172A]">Selected Date</span>
+                    <div className="mt-1.5 flex h-[42px] w-full items-center rounded-lg border border-slate-200 bg-[#F8FAFC] px-3.5 font-inter text-sm font-medium text-[#1E2A52]">
+                      {formatLongDate(selectedDateForAvailability)}
+                    </div>
+                  </div>
 
                   <label className="block">
                     <span className="text-sm font-medium text-[#0F172A]">From</span>
-                    <input
-                      type="time"
+                    <select
                       value={blockForm.startTime}
                       onChange={(event) => updateBlockField("startTime", event.target.value)}
                       disabled={blockForm.isFullDay}
-                      className="mt-2 h-11 w-full rounded-xl border border-[#E2E8F0] bg-white px-4 text-sm text-[#0F172A] outline-none transition focus:border-[#0353A4] focus:ring-4 focus:ring-[#DCEBFF] disabled:bg-[#F8FAFC] disabled:text-[#94A3B8]"
+                      className="mt-1.5 h-[42px] w-full rounded-lg border border-slate-200 bg-white px-3.5 font-inter text-sm text-[#1E2A52] outline-none transition focus:border-[#0353A4] focus:ring-4 focus:ring-sky-100 disabled:bg-slate-50 disabled:text-slate-400"
                       required={!blockForm.isFullDay}
-                    />
+                    >
+                      <option value="" disabled>
+                        Select time
+                      </option>
+                      {availabilityTimeSlots.map((slot) => (
+                        <option key={slot} value={slot}>{slot}</option>
+                      ))}
+                    </select>
                   </label>
 
                   <label className="block">
                     <span className="text-sm font-medium text-[#0F172A]">To</span>
-                    <input
-                      type="time"
+                    <select
                       value={blockForm.endTime}
                       onChange={(event) => updateBlockField("endTime", event.target.value)}
                       disabled={blockForm.isFullDay}
-                      className="mt-2 h-11 w-full rounded-xl border border-[#E2E8F0] bg-white px-4 text-sm text-[#0F172A] outline-none transition focus:border-[#0353A4] focus:ring-4 focus:ring-[#DCEBFF] disabled:bg-[#F8FAFC] disabled:text-[#94A3B8]"
+                      className="mt-1.5 h-[42px] w-full rounded-lg border border-slate-200 bg-white px-3.5 font-inter text-sm text-[#1E2A52] outline-none transition focus:border-[#0353A4] focus:ring-4 focus:ring-sky-100 disabled:bg-slate-50 disabled:text-slate-400"
                       required={!blockForm.isFullDay}
-                    />
+                    >
+                      <option value="" disabled>
+                        Select time
+                      </option>
+                      {availableEndTimeOptions.map((slot) => (
+                        <option key={slot} value={slot}>{slot}</option>
+                      ))}
+                    </select>
                   </label>
 
                   <label className="block md:col-span-2">
@@ -935,13 +1011,13 @@ function AdminDashboard({ session }) {
                       type="text"
                       value={blockForm.reason}
                       onChange={(event) => updateBlockField("reason", event.target.value)}
-                      className="mt-2 h-11 w-full rounded-xl border border-[#E2E8F0] bg-white px-4 text-sm text-[#0F172A] outline-none transition focus:border-[#0353A4] focus:ring-4 focus:ring-[#DCEBFF]"
+                      className="mt-1.5 h-[42px] w-full rounded-lg border border-slate-200 bg-white px-3.5 font-inter text-sm text-[#1E2A52] outline-none transition placeholder:text-slate-400 focus:border-[#0353A4] focus:ring-4 focus:ring-sky-100"
                       placeholder="Personal meeting"
                     />
                   </label>
                 </div>
 
-                <label className="mt-4 inline-flex items-center gap-3 text-sm font-medium text-[#0F172A]">
+                <label className="mt-3 inline-flex items-center gap-2.5 text-sm font-medium text-[#0F172A]">
                   <input
                     type="checkbox"
                     checked={blockForm.isFullDay}
@@ -951,26 +1027,26 @@ function AdminDashboard({ session }) {
                   Block full day
                 </label>
 
-                <div className="mt-5 flex justify-end">
+                <div className="mt-3.5 flex justify-end">
                   <button
                     type="submit"
                     disabled={isBlockingSlot}
-                    className="inline-flex h-11 items-center justify-center rounded-xl bg-[#0353A4] px-5 text-sm font-semibold text-white transition hover:bg-[#02427f] disabled:opacity-70"
+                    className="inline-flex h-[44px] items-center justify-center rounded-xl bg-[#0353A4] px-4 text-sm font-semibold text-white transition hover:bg-[#02427f] disabled:opacity-70"
                   >
                     {isBlockingSlot ? "Adding..." : "Add Block"}
                   </button>
                 </div>
               </form>
 
-              <div className="border-t border-[#E2E8F0] px-6 py-4">
-                <h3 className="text-[22px] font-semibold text-[#0353A4]">
+              <div className="border-t border-[#E2E8F0] px-4 py-3">
+                <h3 className="text-[18px] font-semibold text-[#0353A4]">
                   Blocked slots on {formatLongDate(selectedDateForAvailability)}
                 </h3>
               </div>
 
-              <div className="px-6 pb-6">
+              <div className="px-4 pb-4">
                 {blockedSlotsForSelectedDate.length === 0 ? (
-                  <p className="rounded-2xl border border-[#E2E8F0] bg-[#F8FAFC] px-4 py-4 text-sm text-[#64748B]">
+                  <p className="rounded-2xl border border-[#E2E8F0] bg-[#F8FAFC] px-3.5 py-3 text-sm text-[#64748B]">
                     No blocked slots for this date.
                   </p>
                 ) : (
@@ -1001,8 +1077,8 @@ function AdminDashboard({ session }) {
           </div>
         </section>
 
-        <section className="mt-6 overflow-hidden rounded-[24px] border border-[#E2E8F0] bg-white shadow-[0_12px_32px_rgba(15,23,42,0.05)]">
-          <div className="flex flex-col gap-4 border-b border-[#E2E8F0] px-6 py-5 md:flex-row md:items-center md:justify-between">
+        <section className="mt-4 overflow-hidden rounded-[16px] border border-[#E2E8F0] bg-white shadow-[0_12px_32px_rgba(15,23,42,0.05)]">
+          <div className="flex flex-col gap-3 border-b border-[#E2E8F0] px-4 py-3.5 md:flex-row md:items-center md:justify-between">
             <h2 className="text-[20px] font-semibold text-[#0F172A]">All Blocked Dates &amp; Time Slots</h2>
             <label className="flex items-center gap-3">
               <span className="sr-only">Filter blocked slots</span>
@@ -1019,29 +1095,29 @@ function AdminDashboard({ session }) {
           </div>
 
           {filteredBlockedSlots.length === 0 ? (
-            <p className="px-6 py-8 text-sm font-medium text-[#64748B]">No blocked dates or time slots added yet.</p>
+            <p className="px-4 py-6 text-sm font-medium text-[#64748B]">No blocked dates or time slots added yet.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full border-collapse text-left text-sm">
                 <thead className="bg-[#FBFCFE] text-sm font-medium text-[#64748B]">
                   <tr>
-                    <th className="px-6 py-4 font-medium">Date</th>
-                    <th className="px-6 py-4 font-medium">Time</th>
-                    <th className="px-6 py-4 font-medium">Reason</th>
-                    <th className="px-6 py-4 font-medium">Blocked By</th>
-                    <th className="px-6 py-4 font-medium">Created On</th>
-                    <th className="px-6 py-4 font-medium">Action</th>
+                    <th className="px-4 py-3.5 font-medium">Date</th>
+                    <th className="px-4 py-3.5 font-medium">Time</th>
+                    <th className="px-4 py-3.5 font-medium">Reason</th>
+                    <th className="px-4 py-3.5 font-medium">Blocked By</th>
+                    <th className="px-4 py-3.5 font-medium">Created On</th>
+                    <th className="px-4 py-3.5 font-medium">Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredBlockedSlots.map((slot) => (
                     <tr key={slot.id} className="border-t border-[#E2E8F0]">
-                      <td className="whitespace-nowrap px-6 py-4 font-medium text-[#0F172A]">{formatLongDate(slot.block_date)}</td>
-                      <td className="whitespace-nowrap px-6 py-4 text-[#334155]">{formatTimeRange(slot.start_time, slot.end_time, slot.is_full_day)}</td>
-                      <td className="px-6 py-4 text-[#334155]">{slot.reason || "-"}</td>
-                      <td className="px-6 py-4 text-[#334155]">{slot.blocked_by || "Divya"}</td>
-                      <td className="whitespace-nowrap px-6 py-4 text-[#334155]">{formatDateTime(slot.created_at)}</td>
-                      <td className="px-6 py-4">
+                      <td className="whitespace-nowrap px-4 py-3.5 font-medium text-[#0F172A]">{formatLongDate(slot.block_date)}</td>
+                      <td className="whitespace-nowrap px-4 py-3.5 text-[#334155]">{formatTimeRange(slot.start_time, slot.end_time, slot.is_full_day)}</td>
+                      <td className="px-4 py-3.5 text-[#334155]">{slot.reason || "-"}</td>
+                      <td className="px-4 py-3.5 text-[#334155]">{slot.blocked_by || "Divya"}</td>
+                      <td className="whitespace-nowrap px-4 py-3.5 text-[#334155]">{formatDateTime(slot.created_at)}</td>
+                      <td className="px-4 py-3.5">
                         <button
                           type="button"
                           onClick={() => handleRemoveBlockedSlot(slot.id)}
@@ -1059,7 +1135,7 @@ function AdminDashboard({ session }) {
             </div>
           )}
 
-          <div className="flex flex-col gap-4 border-t border-[#E2E8F0] px-6 py-5 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col gap-3 border-t border-[#E2E8F0] px-4 py-3.5 md:flex-row md:items-center md:justify-between">
             <p className="text-sm text-[#475569]">
               Showing {filteredBlockedSlots.length} of {blockedSlots.length}
             </p>
@@ -1095,7 +1171,7 @@ function AdminDashboard({ session }) {
   function renderDashboardHome() {
     return (
       <>
-        <section className="rounded-[24px] border border-[#E2E8F0] bg-white p-6 shadow-[0_12px_32px_rgba(15,23,42,0.05)] md:p-7">
+        <section className="rounded-[16px] border border-[#E2E8F0] bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.05)]">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <h1 className="text-[28px] font-bold tracking-[-0.02em] text-[#0F172A] md:text-[38px]">Dashboard</h1>
@@ -1113,14 +1189,14 @@ function AdminDashboard({ session }) {
             </button>
           </div>
 
-          <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             {[
               ["Today's bookings", dashboardCounts.today],
               ["Upcoming bookings", dashboardCounts.upcoming],
               ["Pending bookings", dashboardCounts.pending],
               ["Completed bookings", dashboardCounts.completed],
             ].map(([label, value]) => (
-              <article key={label} className="rounded-[20px] border border-[#E2E8F0] bg-[#FBFCFE] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.03)]">
+              <article key={label} className="rounded-[16px] border border-[#E2E8F0] bg-[#FBFCFE] p-4 shadow-[0_8px_24px_rgba(15,23,42,0.03)]">
                 <p className="text-sm font-medium text-[#64748B]">{label}</p>
                 <p className="mt-3 text-[34px] font-semibold tracking-[-0.03em] text-[#0F172A]">{value}</p>
               </article>
@@ -1128,8 +1204,8 @@ function AdminDashboard({ session }) {
           </div>
         </section>
 
-        <section className="mt-6 overflow-hidden rounded-[24px] border border-[#E2E8F0] bg-white shadow-[0_12px_32px_rgba(15,23,42,0.05)]">
-          <div className="grid gap-4 border-b border-[#E2E8F0] px-6 py-5 xl:grid-cols-[minmax(0,1fr)_180px_180px]">
+        <section className="mt-4 overflow-hidden rounded-[16px] border border-[#E2E8F0] bg-white shadow-[0_12px_32px_rgba(15,23,42,0.05)]">
+          <div className="grid gap-3 border-b border-[#E2E8F0] px-4 py-4 xl:grid-cols-[minmax(0,1fr)_180px_180px]">
             <div>
               <h2 className="text-[20px] font-semibold text-[#0F172A]">Bookings</h2>
               <p className="mt-1 text-sm text-[#64748B]">
@@ -1164,36 +1240,36 @@ function AdminDashboard({ session }) {
           </div>
 
           {isLoading ? (
-            <p className="px-6 py-8 text-sm font-medium text-[#64748B]">Loading bookings...</p>
+            <p className="px-4 py-7 text-sm font-medium text-[#64748B]">Loading bookings...</p>
           ) : filteredBookings.length === 0 ? (
-            <p className="px-6 py-8 text-sm font-medium text-[#64748B]">No bookings match the selected filters.</p>
+            <p className="px-4 py-7 text-sm font-medium text-[#64748B]">No bookings match the selected filters.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full border-collapse text-left text-sm">
                 <thead className="bg-[#FBFCFE] text-sm font-medium text-[#64748B]">
                   <tr>
-                    <th className="px-6 py-4 font-medium">Date</th>
-                    <th className="px-6 py-4 font-medium">Time</th>
-                    <th className="px-6 py-4 font-medium">Duration</th>
-                    <th className="px-6 py-4 font-medium">Name</th>
-                    <th className="px-6 py-4 font-medium">Mobile</th>
-                    <th className="px-6 py-4 font-medium">Concern</th>
-                    <th className="px-6 py-4 font-medium">Mode</th>
-                    <th className="px-6 py-4 font-medium">Status</th>
-                    <th className="px-6 py-4 font-medium">Action</th>
+                    <th className="px-4 py-3.5 font-medium">Date</th>
+                    <th className="px-4 py-3.5 font-medium">Time</th>
+                    <th className="px-4 py-3.5 font-medium">Duration</th>
+                    <th className="px-4 py-3.5 font-medium">Name</th>
+                    <th className="px-4 py-3.5 font-medium">Mobile</th>
+                    <th className="px-4 py-3.5 font-medium">Concern</th>
+                    <th className="px-4 py-3.5 font-medium">Mode</th>
+                    <th className="px-4 py-3.5 font-medium">Status</th>
+                    <th className="px-4 py-3.5 font-medium">Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredBookings.map((booking) => (
                     <tr key={booking.id} className="border-t border-[#E2E8F0] align-top">
-                      <td className="whitespace-nowrap px-6 py-4 text-[#334155]">{formatDate(booking.preferred_date)}</td>
-                      <td className="whitespace-nowrap px-6 py-4 text-[#334155]">{booking.preferred_time_slot}</td>
-                      <td className="whitespace-nowrap px-6 py-4 text-[#334155]">{booking.consultation_duration}</td>
-                      <td className="px-6 py-4 font-medium text-[#0F172A]">{booking.full_name}</td>
-                      <td className="whitespace-nowrap px-6 py-4 text-[#334155]">{booking.mobile_number}</td>
-                      <td className="max-w-xs px-6 py-4 text-[#334155]">{booking.primary_concern}</td>
-                      <td className="px-6 py-4 text-[#334155]">{booking.consultation_mode}</td>
-                      <td className="px-6 py-4">
+                      <td className="whitespace-nowrap px-4 py-3.5 text-[#334155]">{formatDate(booking.preferred_date)}</td>
+                      <td className="whitespace-nowrap px-4 py-3.5 text-[#334155]">{booking.preferred_time_slot}</td>
+                      <td className="whitespace-nowrap px-4 py-3.5 text-[#334155]">{booking.consultation_duration}</td>
+                      <td className="px-4 py-3.5 font-medium text-[#0F172A]">{booking.full_name}</td>
+                      <td className="whitespace-nowrap px-4 py-3.5 text-[#334155]">{booking.mobile_number}</td>
+                      <td className="max-w-xs px-4 py-3.5 text-[#334155]">{booking.primary_concern}</td>
+                      <td className="px-4 py-3.5 text-[#334155]">{booking.consultation_mode}</td>
+                      <td className="px-4 py-3.5">
                         <select
                           value={booking.status}
                           disabled={updatingId === booking.id}
@@ -1205,7 +1281,7 @@ function AdminDashboard({ session }) {
                           ))}
                         </select>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-4 py-3.5">
                         <button
                           type="button"
                           onClick={() => openDetails(booking)}
@@ -1226,7 +1302,7 @@ function AdminDashboard({ session }) {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] font-inter text-[#0F172A]">
+    <div className="flex h-[100dvh] w-[100vw] overflow-hidden bg-[#F8FAFC] font-inter text-[#0F172A] [box-sizing:border-box]">
       <div className="lg:hidden">
         <div className="sticky top-0 z-40 flex items-center justify-between border-b border-[#E2E8F0] bg-white px-4 py-4">
           <div className="font-playfair text-[24px] font-bold leading-none">
@@ -1254,22 +1330,22 @@ function AdminDashboard({ session }) {
         </div>
       ) : null}
 
-      <div className="mx-auto flex min-h-screen max-w-[1600px]">
-        <div className="sticky top-0 hidden h-screen lg:block">
+      <div className="flex h-[100dvh] w-full min-w-0">
+        <div className="hidden lg:block">
           {renderSidebar()}
         </div>
 
-        <main className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8 xl:px-10">
-          <div className="mx-auto max-w-[1220px]">
+        <main className="min-w-0 flex-1 overflow-y-auto px-4 py-4 lg:px-5 lg:py-4 [box-sizing:border-box]">
+          <div className="w-full min-w-0 max-w-none">
             {renderTopBar()}
 
             {message ? (
-              <p className="mt-5 rounded-2xl border border-[#FBCFE8] bg-[#FFF1F7] px-4 py-3 text-sm font-medium text-[#BE185D]">
+              <p className="mt-3 rounded-xl border border-[#FBCFE8] bg-[#FFF1F7] px-3 py-2 text-xs font-medium leading-5 text-[#BE185D]">
                 {message}
               </p>
             ) : null}
 
-            <div className="mt-6">
+            <div className="mt-4 min-w-0">
               {activeView === "manage-availability" ? renderManageAvailability() : renderDashboardHome()}
             </div>
           </div>
