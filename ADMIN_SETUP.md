@@ -17,6 +17,15 @@ VITE_EMAILJS_PUBLIC_KEY=YOUR_EMAILJS_PUBLIC_KEY
 
 Never commit `.env`. It is already ignored by Git.
 
+For Vite, only variables prefixed with `VITE_` are exposed to the frontend.
+Use exactly:
+
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
+
+After updating `.env`, restart `npm run dev`. For production, add the same
+variables in the hosting provider settings and redeploy the site.
+
 ## 2. Run the Supabase Schema
 
 Open the Supabase SQL editor for the project and first check whether the

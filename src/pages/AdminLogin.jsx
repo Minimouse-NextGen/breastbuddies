@@ -2,7 +2,7 @@ import { useState } from "react"
 import { Navigate, useLocation, useNavigate } from "react-router-dom"
 import { BrandTagline, BrandWordmark, LogoMark, SmallIcon } from "../components/Graphics"
 import { isAllowedAdminEmail, verifyAdminAccess } from "../services/adminAccess"
-import { isSupabaseConfigured, supabase } from "../services/supabaseClient"
+import { isSupabaseConfigured, supabase, supabaseConfigError } from "../services/supabaseClient"
 
 function AdminLogin({ session }) {
   const navigate = useNavigate()
@@ -22,7 +22,7 @@ function AdminLogin({ session }) {
     setMessage("")
 
     if (!isSupabaseConfigured) {
-      setMessage("Supabase is not configured.")
+      setMessage(supabaseConfigError)
       return
     }
 
