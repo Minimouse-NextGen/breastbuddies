@@ -1,8 +1,4 @@
 import { SmallIcon } from "./Graphics"
-import {
-  RESPONSE_TIME_MESSAGE,
-  WHATSAPP_REASSURANCE_MESSAGE,
-} from "../content/consultationContent"
 import { scrollToSection } from "../utils/scrollToSection"
 
 const whatsappLink = "https://wa.me/917299788877?text=Hello%20BreastBuddies%2C%20I%20would%20like%20to%20book%20a%20lactation%20consultation."
@@ -45,10 +41,6 @@ function Hero() {
               <SmallIcon type="whatsapp" color="#25D366" className="h-4 w-4" />
               <span>Chat on WhatsApp</span>
             </a>
-          </div>
-          <div className="mt-5 space-y-2 font-inter text-sm font-semibold text-[#0353A4] lg:max-w-2xl">
-            <p>{WHATSAPP_REASSURANCE_MESSAGE}</p>
-            <p>{RESPONSE_TIME_MESSAGE}</p>
           </div>
         </div>
 
