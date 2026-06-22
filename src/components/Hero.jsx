@@ -1,4 +1,8 @@
 import { SmallIcon } from "./Graphics"
+import {
+  RESPONSE_TIME_MESSAGE,
+  WHATSAPP_REASSURANCE_MESSAGE,
+} from "../content/consultationContent"
 import { scrollToSection } from "../utils/scrollToSection"
 
 const whatsappLink = "https://wa.me/917299788877?text=Hello%20BreastBuddies%2C%20I%20would%20like%20to%20book%20a%20lactation%20consultation."
@@ -32,15 +36,25 @@ function Hero() {
               <SmallIcon type="calendar" color="currentColor" className="h-5 w-5 shrink-0" />
               <span>Book a Lactation Consultation</span>
             </a>
-            <a
-              href={whatsappLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bb-button bb-button-whatsapp-outline bb-button-full sm:w-auto sm:max-w-[260px]"
-            >
-              <SmallIcon type="whatsapp" color="#25D366" className="h-4 w-4" />
-              <span>Chat on WhatsApp</span>
-            </a>
+            <div className="group relative bb-button-full sm:w-auto sm:max-w-[260px]">
+              <div className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-3 w-[280px] max-w-[calc(100vw-2rem)] -translate-x-1/2 translate-y-1 rounded-2xl border border-[#DDE8F7] bg-white p-4 text-left opacity-0 shadow-[0_12px_30px_rgba(30,42,82,0.12)] transition duration-200 group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:translate-y-0 group-focus-within:opacity-100 sm:left-0 sm:translate-x-0">
+                <p className="font-inter text-sm font-semibold leading-6 text-[#0353A4]">
+                  {WHATSAPP_REASSURANCE_MESSAGE}
+                </p>
+                <p className="mt-2 font-inter text-sm font-semibold leading-6 text-[#0353A4]/85">
+                  {RESPONSE_TIME_MESSAGE}
+                </p>
+              </div>
+              <a
+                href={whatsappLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bb-button bb-button-whatsapp-outline bb-button-full sm:w-auto sm:max-w-[260px]"
+              >
+                <SmallIcon type="whatsapp" color="#25D366" className="h-4 w-4" />
+                <span>Chat on WhatsApp</span>
+              </a>
+            </div>
           </div>
         </div>
 
