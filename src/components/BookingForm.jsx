@@ -1,5 +1,10 @@
 import emailjs from "@emailjs/browser"
 import { useEffect, useMemo, useState } from "react"
+import {
+  CONSULTATION_DETAILS,
+  RESPONSE_TIME_MESSAGE,
+  WHATSAPP_REASSURANCE_MESSAGE,
+} from "../content/consultationContent"
 import { SmallIcon } from "./Graphics"
 import { createBooking, getUnavailableBookingSlots } from "../services/bookingsService"
 
@@ -13,24 +18,8 @@ const SLOT_REFRESH_ERROR = "Unable to refresh slot availability. Please try agai
 
 const modes = ["Online video call", IN_PERSON_MODE]
 const durations = ["30 minutes", "1 hour"]
-const timeSlots = [
-  "09:00 AM",
-  "09:30 AM",
-  "10:00 AM",
-  "10:30 AM",
-  "11:00 AM",
-  "11:30 AM",
-  "12:00 PM",
-  "12:30 PM",
-  "02:00 PM",
-  "02:30 PM",
-  "03:00 PM",
-  "03:30 PM",
-  "04:00 PM",
-  "04:30 PM",
-  "05:00 PM",
-  "05:30 PM",
-]
+const PUBLIC_BOOKING_DAY_START_MINUTES = 9 * 60
+const PUBLIC_BOOKING_DAY_END_MINUTES = 21 * 60
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const indianMobilePattern = /^(?:\+91[\s-]?|91[\s-]?|0)?[6-9]\d{9}$/
@@ -123,6 +112,16 @@ function convertMinutesToTime(minutes) {
   return `${String(hour12).padStart(2, "0")}:${String(minute).padStart(2, "0")} ${period}`
 }
 
+function buildTimeSlots(startMinutes, endMinutes, stepMinutes = 30) {
+  const slots = []
+
+  for (let minutes = startMinutes; minutes < endMinutes; minutes += stepMinutes) {
+    slots.push(convertMinutesToTime(minutes))
+  }
+
+  return slots
+}
+
 function getDurationMinutes(duration) {
   return duration === "1 hour" ? 60 : 30
 }
@@ -135,18 +134,11 @@ function getTimeRange(startTime, duration) {
   return `${startTime} - ${getEndTime(startTime, duration)}`
 }
 
-function getOccupiedSlotStarts(startTime, duration) {
-  const start = convertTimeToMinutes(startTime)
-  const end = start + duration
-
-  return timeSlots.filter((slot) => {
-    const slotStart = convertTimeToMinutes(slot)
-    return slotStart >= start && slotStart < end
-  })
-}
-
-function hasContinuousSlotBlocks(startTime, duration) {
-  return getOccupiedSlotStarts(startTime, duration).length === duration / 30
+function getAvailableStartSlots(duration) {
+  return buildTimeSlots(
+    PUBLIC_BOOKING_DAY_START_MINUTES,
+    PUBLIC_BOOKING_DAY_END_MINUTES - duration + 30,
+  ).filter((slot) => convertTimeToMinutes(slot) + duration <= PUBLIC_BOOKING_DAY_END_MINUTES)
 }
 
 function isSlotInsideSelectedRange(slotTime, selectedStartTime, duration) {
@@ -161,25 +153,29 @@ function isSlotInsideSelectedRange(slotTime, selectedStartTime, duration) {
   return slotStart > selectedStart && slotStart < selectedEnd
 }
 
-function getConflictingUnavailableEntries(slotTime, selectedDate, unavailableSlots) {
+function doTimeRangesOverlap(rangeStartTime, rangeEndTime, blockedStartTime, blockedEndTime) {
+  const rangeStart = convertTimeToMinutes(rangeStartTime)
+  const rangeEnd = convertTimeToMinutes(rangeEndTime)
+  const blockedStart = convertTimeToMinutes(blockedStartTime)
+  const blockedEnd = convertTimeToMinutes(blockedEndTime)
+
+  return rangeStart < blockedEnd && rangeEnd > blockedStart
+}
+
+function getConflictingUnavailableEntries(startTime, duration, selectedDate, unavailableSlots) {
+  const endTime = getEndTime(startTime, duration)
+
   return unavailableSlots.filter((slot) => {
     if (selectedDate && slot.date !== selectedDate) {
       return false
     }
 
-    return getOccupiedSlotStarts(slot.startTime, slot.duration).includes(slotTime)
+    return doTimeRangesOverlap(startTime, endTime, slot.startTime, slot.endTime)
   })
 }
 
-function isSlotDisabledByBooking(slotTime, selectedDate, unavailableSlots) {
-  return getConflictingUnavailableEntries(slotTime, selectedDate, unavailableSlots).length > 0
-}
-
 function getConflictType(slotTime, selectedDate, duration, unavailableSlots) {
-  const requestedSlots = getOccupiedSlotStarts(slotTime, duration)
-  const conflicts = requestedSlots.flatMap((requestedSlot) => (
-    getConflictingUnavailableEntries(requestedSlot, selectedDate, unavailableSlots)
-  ))
+  const conflicts = getConflictingUnavailableEntries(slotTime, duration, selectedDate, unavailableSlots)
 
   if (conflicts.some((conflict) => conflict.source === "blocked_slot")) {
     return "blocked"
@@ -192,15 +188,11 @@ function getConflictType(slotTime, selectedDate, duration, unavailableSlots) {
   return null
 }
 
-function isSlotRangeDisabledByBooking(slotTime, selectedDate, duration, existingBookedSlots) {
-  const requestedSlots = getOccupiedSlotStarts(slotTime, duration)
-
-  return requestedSlots.some((slot) => isSlotDisabledByBooking(slot, selectedDate, existingBookedSlots))
-}
-
 function isSlotSelectable(slotTime, selectedDate, selectedStartTime, duration, existingBookedSlots) {
-  return hasContinuousSlotBlocks(slotTime, duration)
-    && !isSlotRangeDisabledByBooking(slotTime, selectedDate, duration, existingBookedSlots)
+  const endsWithinBookingWindow = convertTimeToMinutes(slotTime) + duration <= PUBLIC_BOOKING_DAY_END_MINUTES
+
+  return endsWithinBookingWindow
+    && getConflictingUnavailableEntries(slotTime, duration, selectedDate, existingBookedSlots).length === 0
     && !isSlotInsideSelectedRange(slotTime, selectedStartTime, duration)
 }
 
@@ -220,6 +212,14 @@ function BookingForm() {
   const [isSending, setIsSending] = useState(false)
   const calendarDays = useMemo(() => buildCalendarDays(calendarMonth), [calendarMonth])
   const isInPersonConsultation = isInPersonConsultationMode(formData.consultationMode)
+  const durationMinutes = useMemo(
+    () => getDurationMinutes(formData.consultationDuration),
+    [formData.consultationDuration],
+  )
+  const availableStartSlots = useMemo(
+    () => getAvailableStartSlots(durationMinutes),
+    [durationMinutes],
+  )
 
   useEffect(() => {
     let isMounted = true
@@ -360,7 +360,7 @@ function BookingForm() {
       return
     }
 
-    const durationMinutes = isInPersonConsultation ? 0 : getDurationMinutes(formData.consultationDuration)
+      const durationMinutes = isInPersonConsultation ? 0 : getDurationMinutes(formData.consultationDuration)
     const consultationDuration = isInPersonConsultation ? IN_PERSON_DURATION : formData.consultationDuration
     const selectedSlotRange = isInPersonConsultation
       ? IN_PERSON_TIME_SLOT
@@ -486,29 +486,62 @@ BreastBuddies Website`,
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <h2 className="heading-h2">
-            Book an Online Lactation Consultation
+            Book an Online Lactation Consultation in India
           </h2>
           <div className="mx-auto mt-3 h-3 w-8 rounded-full bg-[#ffb6ca]" />
           <p className="mx-auto mt-5 max-w-3xl font-inter text-base font-normal leading-7 text-[#1E2A52]/85">
-            Fill out the form below and I'll connect with you on WhatsApp to
-            understand your needs and help you book a session.
+            Fill out the form below and Divya Umashankar will connect with you
+            on WhatsApp to understand your needs, whether you are looking for
+            latch assessment, low milk supply support, newborn feeding support,
+            or an Online Lactation Consultation India families can access with
+            ease.
           </p>
+          <div className="mt-4 space-y-2">
+            <p className="font-inter text-sm font-semibold text-[#0353A4]">
+              {WHATSAPP_REASSURANCE_MESSAGE}
+            </p>
+            <p className="font-inter text-sm font-semibold text-[#0353A4]/85">
+              {RESPONSE_TIME_MESSAGE}
+            </p>
+          </div>
         </div>
 
         <div className="mt-10 grid grid-cols-1 items-start gap-8 lg:grid-cols-12 lg:gap-10">
-          <aside className="w-full rounded-3xl border border-sky-300 bg-gradient-to-b from-sky-50 to-[#F4FAFF] p-6 text-[#1E2A52] shadow-lg shadow-sky-900/10 lg:sticky lg:top-28 lg:col-span-4 lg:p-8">
-            <span className="grid h-11 w-11 place-items-center rounded-full border border-sky-200 bg-white text-[#0353A4] shadow-sm shadow-sky-900/10">
-              <SmallIcon type="info" color="#0353A4" className="h-5 w-5" />
-            </span>
-            <div className="mt-5">
-              <p className="font-inter text-base font-bold leading-6 text-[#1E2A52]">
-                Care Guidance
+          <aside className="space-y-5 lg:sticky lg:top-28 lg:col-span-4">
+            <div className="w-full rounded-3xl border border-sky-300 bg-gradient-to-b from-sky-50 to-[#F4FAFF] p-6 text-[#1E2A52] shadow-lg shadow-sky-900/10 lg:p-8">
+              <span className="grid h-11 w-11 place-items-center rounded-full border border-sky-200 bg-white text-[#0353A4] shadow-sm shadow-sky-900/10">
+                <SmallIcon type="info" color="#0353A4" className="h-5 w-5" />
+              </span>
+              <div className="mt-5">
+                <p className="font-inter text-base font-bold leading-6 text-[#1E2A52]">
+                  Care Guidance
+                </p>
+                <p className="mt-3 font-inter text-base font-semibold leading-7 text-[#1E2A52]/85">
+                  Online consultations have limitations. Cases that require in-person assessment of
+                  the baby or mother may be referred for offline care to support the best possible
+                  outcomes.
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-3xl border border-[#DDE8F7] bg-white p-6 shadow-[0_12px_30px_rgba(30,42,82,0.07)] lg:p-8">
+              <p className="font-playfair text-2xl font-bold text-[#1E2A52]">
+                {CONSULTATION_DETAILS.title}
               </p>
-              <p className="mt-3 font-inter text-base font-semibold leading-7 text-[#1E2A52]/85">
-                Online consultations have limitations. Cases that require in-person assessment of
-                the baby or mother may be referred for offline care to support the best possible
-                outcomes.
+              <p className="mt-3 font-inter text-sm leading-7 text-[#1E2A52]/80">
+                {CONSULTATION_DETAILS.description}
               </p>
+              <ul className="mt-5 space-y-3">
+                {CONSULTATION_DETAILS.points.map((point) => (
+                  <li
+                    key={point}
+                    className="flex items-start gap-3 font-inter text-sm leading-7 text-[#1E2A52]/82"
+                  >
+                    <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-[#FF477E]" />
+                    <span>{point}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           </aside>
 
@@ -786,27 +819,20 @@ BreastBuddies Website`,
 
               {formData.preferredDate && formData.consultationDuration ? (
                 <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                  {timeSlots.map((slot) => {
+                  {availableStartSlots.map((slot) => {
                     const isSelected = formData.preferredTimeSlot === slot
-                    const durationMinutes = getDurationMinutes(formData.consultationDuration)
                     const conflictType = getConflictType(
                       slot,
                       formData.preferredDate,
                       durationMinutes,
                       bookedSlots,
                     )
-                    const isBooked = isSlotDisabledByBooking(
+                    const isRangeBooked = getConflictingUnavailableEntries(
                       slot,
-                      formData.preferredDate,
-                      bookedSlots,
-                    )
-                    const isUnavailable = !hasContinuousSlotBlocks(slot, durationMinutes)
-                    const isRangeBooked = isSlotRangeDisabledByBooking(
-                      slot,
-                      formData.preferredDate,
                       durationMinutes,
+                      formData.preferredDate,
                       bookedSlots,
-                    )
+                    ).length > 0
                     const isIncluded = isSlotInsideSelectedRange(
                       slot,
                       formData.preferredTimeSlot,
@@ -836,7 +862,7 @@ BreastBuddies Website`,
                         className={`group rounded-2xl border px-4 py-3 text-left font-inter transition-all duration-300 ${
                           isSelected
                             ? "border-[#0353A4] bg-[#EAF4FF] text-[#1E2A52] shadow-md shadow-blue-500/10"
-                            : isBooked || isIncluded || isUnavailable || isRangeBooked
+                            : isIncluded || isRangeBooked
                               ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400 opacity-70"
                             : "border-sky-100 bg-white text-[#1E2A52]/80 hover:-translate-y-0.5 hover:border-[#0353A4] hover:bg-white hover:shadow-md hover:shadow-sky-900/5"
                         }`}
@@ -847,20 +873,18 @@ BreastBuddies Website`,
                           className={`mt-1 block text-xs font-medium ${
                             isSelected
                               ? "text-[#0353A4]"
-                              : isBooked || isIncluded || isUnavailable || isRangeBooked
+                              : isIncluded || isRangeBooked
                                 ? "text-slate-400"
                                 : "text-[#1E2A52]/55 group-hover:text-[#0353A4]"
                           }`}
                         >
-                          {isBooked || isRangeBooked
+                          {isRangeBooked
                             ? conflictType === "blocked"
                               ? "Not available"
                               : "Booked"
                             : isIncluded
                               ? "Included"
-                              : isUnavailable
-                                ? "Unavailable"
-                                : range}
+                              : range}
                         </span>
                       </button>
                     )

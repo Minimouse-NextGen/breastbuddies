@@ -7,7 +7,7 @@ const services = [
   {
     title: "Breastfeeding Classes & Assessment During Pregnancy",
     description:
-      "Helping expecting mothers and families prepare for a confident breastfeeding journey.",
+      "Helping expecting mothers and families prepare for a confident breastfeeding journey with caring guidance from a Lactation Consultant in Chennai.",
     image: antenatalSupport,
     accent: "#0353A4",
     border: "border-[#D6E6FF]",
@@ -22,23 +22,23 @@ const services = [
   {
     title: "Postpartum Breastfeeding Support",
     description:
-      "Supporting mothers and babies through breastfeeding challenges after delivery.",
+      "Supporting mothers and babies through breastfeeding challenges after delivery with practical, mother-friendly care.",
     image: postpartumSupport,
     accent: "#FF477E",
     border: "border-[#FFD1DF]",
     background: "bg-[#FFF8FB]",
     points: [
       "Latch assessment & optimization",
-      "Supply management & pain relief",
+      "Supply management, pain relief & low milk supply support",
       "Engorgement, mastitis & jaundice support",
-      "Low milk supply concerns",
+      "Newborn feeding support for early challenges",
       "Breastfeeding confidence & reassurance",
     ],
   },
   {
     title: "Specialized Lactation Support",
     description:
-      "Personalized support for complex feeding situations and special care needs.",
+      "Personalized support for complex feeding situations, tongue tie breastfeeding support, and special care needs.",
     image: specializedSupport,
     accent: "#0353A4",
     border: "border-[#D6E6FF]",
@@ -46,6 +46,7 @@ const services = [
     points: [
       "Induced lactation & relactation",
       "Cleft lip & palate support",
+      "Tongue tie breastfeeding support",
       "Special feeding needs",
       "Adoption & surrogacy feeding support",
       "Inclusive feeding support",
@@ -64,6 +65,12 @@ function Services() {
           <h2 className="heading-h2">
             How I Can Support You
           </h2>
+          <p className="mx-auto mt-4 max-w-3xl font-inter text-base font-normal leading-7 text-[#1E2A52]/80">
+            From pregnancy preparation to postpartum care, BreastBuddies offers
+            thoughtful support for families looking for a Lactation Consultant,
+            a Breastfeeding Consultant in Chennai, or online guidance across
+            India.
+          </p>
           <div className="mx-auto mt-3 flex items-center justify-center gap-2 text-[#FF477E]">
             <span className="h-px w-10 bg-[#FF477E]/35" />
             <span className="text-xl leading-none">♥</span>

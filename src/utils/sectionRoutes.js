@@ -1,6 +1,6 @@
 export const navItems = [
   { label: "Home", id: "top", path: "/" },
-  { label: "About Divya", id: "about", path: "/about-divya" },
+  { label: "About Divya Umashankar", id: "about", path: "/about-divya" },
   { label: "Services", id: "services", path: "/services" },
   { label: "Gallery", id: "gallery", path: "/gallery" },
   { label: "Book Consultation", id: "booking", path: "/book-consultation" },

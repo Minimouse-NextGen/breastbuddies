@@ -1,4 +1,8 @@
 import { SmallIcon } from "./Graphics"
+import {
+  RESPONSE_TIME_MESSAGE,
+  WHATSAPP_REASSURANCE_MESSAGE,
+} from "../content/consultationContent"
 import { scrollToSection } from "../utils/scrollToSection"
 
 const whatsappLink = "https://wa.me/917299788877?text=Hello%20BreastBuddies%2C%20I%20would%20like%20to%20book%20a%20lactation%20consultation."
@@ -12,13 +16,15 @@ function Hero() {
         <div className="relative z-10 mx-auto w-full max-w-3xl text-center lg:mx-0 lg:pt-2 lg:text-left">
           <h1 className="heading-h1">
             <span className="block">Compassionate</span>
-            <span className="block">Lactation Support for</span>
+            <span className="block">Lactation Consultant Support for</span>
             <span className="block italic text-[#FF477E]">Every Family</span>
           </h1>
           <p className="mx-auto mt-5 max-w-xl font-inter text-base font-medium leading-7 text-[#1E2A52]/85 sm:text-lg lg:mx-0 xl:max-w-2xl">
-            Personalized antenatal and postpartum breastfeeding support by Divya
-            Umashankar for mothers, babies, and families at every stage of their
-            feeding journey with confidence and care.
+            BreastBuddies offers personalized antenatal and postpartum support by
+            Divya Umashankar, Certified Advanced Lactation Professional and
+            Lactation Consultant, with warm guidance for families seeking a
+            Lactation Consultant in Chennai, a Breastfeeding Consultant in
+            Chennai, or trusted online support anywhere in India and worldwide.
           </p>
 
           <div className="mt-6 flex flex-col items-stretch justify-center gap-4 sm:flex-row sm:items-center lg:justify-start">
@@ -28,7 +34,7 @@ function Hero() {
               className="bb-button bb-button-primary bb-button-full sm:w-auto sm:max-w-[300px]"
             >
               <SmallIcon type="calendar" color="currentColor" className="h-5 w-5 shrink-0" />
-              <span>Book a Virtual Consultation</span>
+              <span>Book a Lactation Consultation</span>
             </a>
             <a
               href={whatsappLink}
@@ -39,6 +45,10 @@ function Hero() {
               <SmallIcon type="whatsapp" color="#25D366" className="h-4 w-4" />
               <span>Chat on WhatsApp</span>
             </a>
+          </div>
+          <div className="mt-5 space-y-2 font-inter text-sm font-semibold text-[#0353A4] lg:max-w-2xl">
+            <p>{WHATSAPP_REASSURANCE_MESSAGE}</p>
+            <p>{RESPONSE_TIME_MESSAGE}</p>
           </div>
         </div>
 

@@ -1,4 +1,4 @@
-import { BrandTagline, LogoMark, SmallIcon } from "./Graphics"
+import { BrandTagline, BrandWordmark, LogoMark, SmallIcon } from "./Graphics"
 import { scrollToSection } from "../utils/scrollToSection"
 
 const whatsappLink = "https://wa.me/917299788877?text=Hello%20BreastBuddies%2C%20I%20would%20like%20to%20book%20a%20lactation%20consultation."
@@ -12,9 +12,10 @@ function Footer() {
             <div className="flex items-center gap-3 sm:gap-4">
               <LogoMark className="h-12 w-12 shrink-0 sm:h-16 sm:w-16 lg:h-14 lg:w-14 xl:h-[72px] xl:w-[72px]" />
               <div className="min-w-0">
-                <p className="whitespace-nowrap font-playfair text-[1.75rem] font-bold leading-none tracking-normal sm:text-[2.25rem] lg:text-[2rem] xl:text-[2.45rem]">
-                  breastbuddies
-                </p>
+                <BrandWordmark
+                  className="block"
+                  sizeClassName="text-[1.75rem] sm:text-[2.25rem] lg:text-[2rem] xl:text-[2.45rem]"
+                />
                 <BrandTagline className="mt-2 block text-sm leading-6 text-white/90 md:whitespace-nowrap" />
               </div>
             </div>

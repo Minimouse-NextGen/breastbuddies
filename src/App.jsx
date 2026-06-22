@@ -2,12 +2,15 @@ import { useEffect, useState } from "react"
 import { Navigate, Route, Routes, useLocation } from "react-router-dom"
 import AboutDivya from "./components/AboutDivya"
 import BookingForm from "./components/BookingForm"
+import FAQ from "./components/FAQ"
 import FloatingWhatsApp from "./components/FloatingWhatsApp"
 import Footer from "./components/Footer"
 import { BrandWordmark, LogoMark } from "./components/Graphics"
 import Header from "./components/Header"
 import Hero from "./components/Hero"
+import HowItWorks from "./components/HowItWorks"
 import Services from "./components/Services"
+import Testimonials from "./components/Testimonials"
 import TrustHighlights from "./components/TrustHighlights"
 import AdminDashboard from "./pages/AdminDashboard"
 import AdminLogin from "./pages/AdminLogin"
@@ -65,7 +68,10 @@ function WebsitePage() {
         <TrustHighlights />
         <AboutDivya />
         <Services />
+        <FAQ />
+        <Testimonials />
         {shouldShowGalleryPlaceholder ? <GalleryPlaceholder /> : null}
+        <HowItWorks />
         <BookingForm />
       </main>
       <Footer />

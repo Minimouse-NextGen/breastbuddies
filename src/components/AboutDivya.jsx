@@ -87,9 +87,10 @@ function AboutDivya() {
 
             <div className="mt-5 space-y-5 font-inter text-base font-medium leading-7 text-[#1E2A52]/85">
               <p>
-                Divya Umashankar is an Advanced Certified Lactation Professional with specialized
-                training in Infant and Young Child Feeding. She supports mothers, babies, and
-                families with compassionate, evidence-based information and practices.
+                Divya Umashankar is a Certified Advanced Lactation Professional and Lactation
+                Consultant with specialized training in Infant and Young Child Feeding. She
+                supports mothers, babies, and families with compassionate, evidence-based
+                information and practices.
               </p>
               <p>
                 She has many years of experience working with families from different parts of the
@@ -102,9 +103,10 @@ function AboutDivya() {
                 and family-centered feeding care.
               </p>
               <p>
-                Divya believes lactation support is not just about feeding a baby at the breast.
-                It is about understanding the mother, baby, and family's needs, respecting their
-                choices, and helping them make informed, confident feeding decisions.
+                Divya Umashankar believes lactation support is not just about feeding a baby at
+                the breast. It is about understanding the mother, baby, and family's needs,
+                respecting their choices, and helping them make informed, confident feeding
+                decisions.
               </p>
             </div>
 
