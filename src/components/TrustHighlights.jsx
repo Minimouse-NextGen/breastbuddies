@@ -3,8 +3,8 @@ import { SmallIcon } from "./Graphics"
 const highlights = [
   { title: "Certified Advanced\nLactation Professional", icon: "award", color: "#0353A4", bg: "#EFF6FF" },
   { title: "Latch Assessment &\nBreastfeeding Support", icon: "baby", color: "#FF477E", bg: "#FFF1F5" },
-  { title: "Online Lactation\nConsultation India", icon: "online", color: "#0353A4", bg: "#EFF6FF" },
-  { title: "Chennai & Worldwide\nNewborn Feeding Support", icon: "location", color: "#0353A4", bg: "#EFF6FF" },
+  { title: "Online Lactation\nConsultations Worldwide", icon: "online", color: "#0353A4", bg: "#EFF6FF" },
+  { title: "Chennai & Worldwide\nBreastfeeding Support", icon: "location", color: "#0353A4", bg: "#EFF6FF" },
 ]
 
 function TrustHighlights() {

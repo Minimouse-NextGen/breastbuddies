@@ -14,7 +14,7 @@ const faqItems = [
   {
     question: "Do you provide online lactation consultation in India?",
     answer:
-      "Yes. BreastBuddies offers Online Lactation Consultation India families can access from home, along with support for mothers in Chennai and families living in other cities. Online sessions are designed to be warm, practical, and easy to follow, with in-person referral guidance when a hands-on assessment is needed.",
+      "Yes. BreastBuddies offers online consultations for families across India and around the world. Sessions are warm, practical, and easy to follow, with in-person referral guidance when a hands-on assessment is needed.",
   },
   {
     question: "Can you help with latch issues and low milk supply?",
@@ -29,12 +29,12 @@ const faqItems = [
   {
     question: "Is BreastBuddies available for mothers outside Chennai?",
     answer:
-      "Yes. While many families look for a Lactation Consultant in Chennai, BreastBuddies also supports mothers across India and worldwide through online consultations. This makes it easier for families outside Chennai to receive timely, professional breastfeeding support from home.",
+      "Yes. Families outside Chennai can also receive support through online consultations. This makes it easier to get timely, professional breastfeeding guidance from home, wherever you are.",
   },
   {
     question: "What is the difference between a breastfeeding consultant and a lactation consultant?",
     answer:
-      "Many parents use the terms breastfeeding consultant and Lactation Consultant interchangeably when searching for qualified feeding support. Many parents search for \"IBCLC near me\" when they need qualified breastfeeding support. BreastBuddies helps families connect with evidence-based lactation guidance from Divya Umashankar, a Certified Advanced Lactation Professional and Lactation Consultant.",
+      "Many parents use the terms breastfeeding consultant and lactation consultant interchangeably when looking for feeding support. What matters most is finding qualified, evidence-based guidance that helps you feel informed and supported. At BreastBuddies, Divya Umashankar offers practical care tailored to your family's needs.",
   },
 ]
 
@@ -68,9 +68,8 @@ function FAQ() {
         <div className="text-center">
           <h2 className="heading-h2">Frequently Asked Questions</h2>
           <p className="mx-auto mt-4 max-w-3xl font-inter text-base leading-7 text-[#1E2A52]/80">
-            A few gentle answers for families looking for a Lactation
-            Consultant, breastfeeding support, or online guidance from
-            BreastBuddies.
+            A few gentle answers for families looking for breastfeeding
+            support, expert guidance, or online care from BreastBuddies.
           </p>
         </div>
 

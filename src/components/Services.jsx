@@ -7,7 +7,7 @@ const services = [
   {
     title: "Breastfeeding Classes & Assessment During Pregnancy",
     description:
-      "Helping expecting mothers and families prepare for a confident breastfeeding journey with caring guidance from a Lactation Consultant in Chennai.",
+      "Helping expecting mothers and families prepare for a confident breastfeeding journey with caring, personalized support.",
     image: antenatalSupport,
     accent: "#0353A4",
     border: "border-[#D6E6FF]",
@@ -66,10 +66,8 @@ function Services() {
             How I Can Support You
           </h2>
           <p className="mx-auto mt-4 max-w-3xl font-inter text-base font-normal leading-7 text-[#1E2A52]/80">
-            From pregnancy preparation to postpartum care, BreastBuddies offers
-            thoughtful support for families looking for a Lactation Consultant,
-            a Breastfeeding Consultant in Chennai, or online guidance across
-            India.
+            Compassionate breastfeeding support for every stage of motherhood
+            — from pregnancy preparation to newborn feeding and beyond.
           </p>
           <div className="mx-auto mt-3 flex items-center justify-center gap-2 text-[#FF477E]">
             <span className="h-px w-10 bg-[#FF477E]/35" />

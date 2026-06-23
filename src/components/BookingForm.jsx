@@ -490,11 +490,10 @@ BreastBuddies Website`,
           </h2>
           <div className="mx-auto mt-3 h-3 w-8 rounded-full bg-[#ffb6ca]" />
           <p className="mx-auto mt-5 max-w-3xl font-inter text-base font-normal leading-7 text-[#1E2A52]/85">
-            Fill out the form below and Divya Umashankar will connect with you
-            on WhatsApp to understand your needs, whether you are looking for
-            latch assessment, low milk supply support, newborn feeding support,
-            or an Online Lactation Consultation India families can access with
-            ease.
+            Fill out the form below and Divya Umashankar will personally
+            connect with you on WhatsApp to understand your concerns, answer
+            your questions, and guide you toward the support that best meets
+            your family's needs.
           </p>
           <div className="mt-4 space-y-2">
             <p className="font-inter text-sm font-semibold text-[#0353A4]">

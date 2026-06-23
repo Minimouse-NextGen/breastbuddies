@@ -4,7 +4,7 @@ import { scrollToSection } from "../utils/scrollToSection"
 function AboutDivya() {
   const profileCredentials = [
     { text: "National Trainer for BPNI, India", icon: "online" },
-    { text: "ALPI Advisory Team Member", icon: "family" },
+    { text: "Former Advisory Team Member, ALPI", icon: "family" },
     { text: "Professional Advisory Committee Member for GOLD Lactation", icon: "award" },
     { text: "Assessor for Breastfeeding Friendly Hospital Initiative", icon: "shield" },
   ]
@@ -87,26 +87,28 @@ function AboutDivya() {
 
             <div className="mt-5 space-y-5 font-inter text-base font-medium leading-7 text-[#1E2A52]/85">
               <p>
-                Divya Umashankar is a Certified Advanced Lactation Professional and Lactation
-                Consultant with specialized training in Infant and Young Child Feeding. She
-                supports mothers, babies, and families with compassionate, evidence-based
-                information and practices.
+                Divya Umashankar is a Certified Advanced Lactation Professional
+                and Lactation Consultant with specialized training in Infant and
+                Young Child Feeding. She supports mothers, babies, and families
+                with compassionate, evidence-based care.
               </p>
               <p>
-                She has many years of experience working with families from different parts of the
-                world. She has travelled across different regions to understand diverse practices
-                and implement approaches that support families in the best possible way.
+                She has many years of experience working with families from
+                different parts of the world. Her work across diverse settings
+                helps her offer support that is respectful, practical, and
+                tailored to each family's needs.
               </p>
               <p>
-                Her experience includes antenatal lactation guidance, postpartum breastfeeding
-                support, induced lactation, relactation, support for babies with special needs,
-                and family-centered feeding care.
+                Her experience includes antenatal lactation guidance,
+                postpartum breastfeeding support, induced lactation,
+                relactation, support for babies with special needs, and
+                family-centered feeding care.
               </p>
               <p>
-                Divya Umashankar believes lactation support is not just about feeding a baby at
-                the breast. It is about understanding the mother, baby, and family's needs,
-                respecting their choices, and helping them make informed, confident feeding
-                decisions.
+                Divya Umashankar believes lactation support is not just about
+                feeding a baby at the breast. It is about understanding the
+                mother, baby, and family's needs, respecting their choices, and
+                helping them make informed, confident feeding decisions.
               </p>
             </div>
 

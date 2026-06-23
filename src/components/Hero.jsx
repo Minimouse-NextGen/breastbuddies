@@ -20,11 +20,10 @@ function Hero() {
             <span className="block italic text-[#FF477E]">Every Family</span>
           </h1>
           <p className="mx-auto mt-5 max-w-xl font-inter text-base font-medium leading-7 text-[#1E2A52]/85 sm:text-lg lg:mx-0 xl:max-w-2xl">
-            BreastBuddies offers personalized antenatal and postpartum support by
-            Divya Umashankar, Certified Advanced Lactation Professional and
-            Lactation Consultant, with warm guidance for families seeking a
-            Lactation Consultant in Chennai, a Breastfeeding Consultant in
-            Chennai, or trusted online support anywhere in India and worldwide.
+            BreastBuddies offers personalized antenatal and postpartum support
+            by Divya Umashankar, Certified Advanced Lactation Professional and
+            Lactation Consultant, for families in Chennai and those seeking
+            trusted online consultations worldwide.
           </p>
 
           <div className="mt-6 flex flex-col items-stretch justify-center gap-4 sm:flex-row sm:items-center lg:justify-start">
