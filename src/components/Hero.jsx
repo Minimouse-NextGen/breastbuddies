@@ -1,17 +1,16 @@
+import { useRef } from "react"
 import { SmallIcon } from "./Graphics"
-import {
-  RESPONSE_TIME_MESSAGE,
-  WHATSAPP_REASSURANCE_MESSAGE,
-} from "../content/consultationContent"
+import WhatsAppCallout from "./WhatsAppCallout"
 import { scrollToSection } from "../utils/scrollToSection"
 
 const whatsappLink = "https://wa.me/917299788877?text=Hello%20BreastBuddies%2C%20I%20would%20like%20to%20book%20a%20lactation%20consultation."
 
 function Hero() {
+  const whatsappButtonRef = useRef(null)
+
   return (
     <section id="top" className="relative overflow-hidden bg-gradient-to-br from-[#F7FCFF] via-[#EAF4FF] to-[#DFF0FF] pb-16 pt-5 sm:pb-20 lg:min-h-[560px] lg:pt-4">
       <div className="pointer-events-none absolute left-4 top-8 hidden h-20 w-20 rounded-full border-4 border-white/70 lg:block" />
-      <div className="pointer-events-none absolute right-[36%] top-12 hidden text-4xl text-white/70 lg:block">♡</div>
       <div className="mx-auto grid min-h-0 max-w-7xl grid-cols-1 items-center gap-10 px-4 sm:px-6 lg:min-h-[440px] lg:grid-cols-2 lg:px-8 xl:min-h-[470px]">
         <div className="relative z-10 mx-auto w-full max-w-3xl text-center lg:mx-0 lg:pt-2 lg:text-left">
           <h1 className="heading-h1">
@@ -35,22 +34,32 @@ function Hero() {
               <SmallIcon type="calendar" color="currentColor" className="h-5 w-5 shrink-0" />
               <span>Book a Lactation Consultation</span>
             </a>
+
             <div className="group relative bb-button-full sm:w-auto sm:max-w-[260px]">
-              <div className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-3 w-[280px] max-w-[calc(100vw-2rem)] -translate-x-1/2 translate-y-1 rounded-2xl border border-[#DDE8F7] bg-white p-4 text-left opacity-0 shadow-[0_12px_30px_rgba(30,42,82,0.12)] transition duration-200 group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:translate-y-0 group-focus-within:opacity-100 sm:left-0 sm:translate-x-0">
-                <p className="font-inter text-sm font-semibold leading-6 text-[#0353A4]">
-                  {WHATSAPP_REASSURANCE_MESSAGE}
-                </p>
-                <p className="mt-2 font-inter text-sm font-semibold leading-6 text-[#0353A4]/85">
-                  {RESPONSE_TIME_MESSAGE}
-                </p>
-              </div>
+              <WhatsAppCallout
+                className="bottom-full left-[calc(50%+250px)] mb-4 w-[300px] max-w-[320px] -translate-x-1/2"
+                arrowClassName="bottom-[-7px] left-[15%] -translate-x-1/2 border-b border-r"
+                heading="Need help?"
+                bodyLines={[
+                  "Not sure where to start?",
+                  "Chat with us on WhatsApp and we'll guide you toward the support that feels right for you.",
+                ]}
+                statusText="We usually reply within 2 hours during the day."
+                bubbleClassName="p-[18px]"
+                headingClassName="text-[20px] sm:text-[20px]"
+                bodyClassName="max-w-[30ch] text-[15px] leading-[1.6] text-[#334155] sm:text-[15px] [&:first-of-type]:mt-3 [&:first-of-type]:text-[16px] [&:first-of-type]:font-medium [&:first-of-type]:leading-[1.5]"
+                statusClassName="mt-[14px] text-[14px] font-medium"
+              />
+
               <a
+                ref={whatsappButtonRef}
                 href={whatsappLink}
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label="Chat with Divya on WhatsApp"
                 className="bb-button bb-button-whatsapp-outline bb-button-full sm:w-auto sm:max-w-[260px]"
               >
-                <SmallIcon type="whatsapp" color="#25D366" className="h-4 w-4" />
+                <SmallIcon type="whatsapp" className="h-4 w-4 shrink-0" />
                 <span>Chat on WhatsApp</span>
               </a>
             </div>

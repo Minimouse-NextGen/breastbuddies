@@ -9,7 +9,7 @@ const highlights = [
 
 function TrustHighlights() {
   return (
-    <section className="relative z-10 mb-6 pb-1 pt-0 sm:-mt-8 lg:-mt-12 lg:mb-8">
+    <section id="trust-highlights" className="relative z-10 mb-6 pb-1 pt-0 sm:-mt-8 lg:-mt-12 lg:mb-8">
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
         {highlights.map((item) => (
           <div
