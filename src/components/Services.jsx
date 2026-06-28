@@ -1,7 +1,7 @@
 import { SmallIcon } from "./Graphics"
-import antenatalSupport from "../assets/antenatal-support.png"
-import postpartumSupport from "../assets/postpartum-support.png"
-import specializedSupport from "../assets/specialized-support.png"
+import antenatalSupport from "../assets/antenatal-support.webp"
+import postpartumSupport from "../assets/postpartum-support.webp"
+import specializedSupport from "../assets/specialized-support.webp"
 
 const services = [
   {
@@ -9,6 +9,8 @@ const services = [
     description:
       "Helping expecting mothers and families prepare for a confident breastfeeding journey with caring, personalized support.",
     image: antenatalSupport,
+    width: 1254,
+    height: 1254,
     accent: "#0353A4",
     border: "border-[#D6E6FF]",
     background: "bg-white",
@@ -24,6 +26,8 @@ const services = [
     description:
       "Supporting mothers and babies through breastfeeding challenges after delivery with practical, mother-friendly care.",
     image: postpartumSupport,
+    width: 1024,
+    height: 1024,
     accent: "#FF477E",
     border: "border-[#FFD1DF]",
     background: "bg-[#FFF8FB]",
@@ -40,6 +44,8 @@ const services = [
     description:
       "Personalized support for complex feeding situations, tongue tie breastfeeding support, and special care needs.",
     image: specializedSupport,
+    width: 1254,
+    height: 1254,
     accent: "#0353A4",
     border: "border-[#D6E6FF]",
     background: "bg-white",
@@ -87,6 +93,9 @@ function Services() {
                   <img
                     src={service.image}
                     alt=""
+                    width={service.width}
+                    height={service.height}
+                    loading="lazy"
                     className="h-[112px] w-[112px] max-w-full shrink-0 object-contain sm:h-[130px] sm:w-[130px]"
                   />
 

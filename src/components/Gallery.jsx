@@ -1,23 +1,31 @@
-import antenatalSupport from "../assets/antenatal-support.png"
-import postpartumSupport from "../assets/postpartum-support.png"
-import specializedSupport from "../assets/specialized-support.png"
+import antenatalSupport from "../assets/antenatal-support.webp"
+import postpartumSupport from "../assets/postpartum-support.webp"
+import specializedSupport from "../assets/specialized-support.webp"
 
 const galleryItems = [
   {
     title: "Mother-Centered Care",
-    image: "/mother-feeding.png",
+    image: "/mother-feeding.webp",
+    width: 1536,
+    height: 1024,
   },
   {
     title: "Antenatal Guidance",
     image: antenatalSupport,
+    width: 1254,
+    height: 1254,
   },
   {
     title: "Postpartum Support",
     image: postpartumSupport,
+    width: 1024,
+    height: 1024,
   },
   {
     title: "Specialized Care",
     image: specializedSupport,
+    width: 1254,
+    height: 1254,
   },
 ]
 
@@ -42,6 +50,9 @@ function Gallery() {
                 <img
                   src={item.image}
                   alt={item.title}
+                  width={item.width}
+                  height={item.height}
+                  loading="lazy"
                   className="h-full w-full object-cover"
                 />
               </div>

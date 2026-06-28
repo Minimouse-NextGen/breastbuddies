@@ -5,8 +5,10 @@ export const BRAND_TAGLINE = "Because every mother deserves support."
 export function LogoMark({ className = "h-16 w-16" }) {
   return (
     <img
-      src="/breastbuddies-logo.png"
+      src="/breastbuddies-logo.webp"
       alt="BreastBuddies logo"
+      width="627"
+      height="627"
       className={`${className} rounded-full object-contain`}
     />
   )
@@ -167,6 +169,8 @@ export function SmallIcon({ type, className = "h-8 w-8", color = BRAND_BLUE }) {
       <img
         src="/whatsapp-svgrepo-com.svg"
         alt=""
+        width="800"
+        height="800"
         className={className}
         aria-hidden="true"
       />

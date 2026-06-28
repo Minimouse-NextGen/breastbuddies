@@ -54,8 +54,11 @@ function AboutDivya() {
             <div className="relative">
               <div className="overflow-hidden rounded-[8px] bg-white">
                 <img
-                  src="/divya-dinesh.jpeg"
+                  src="/divya-dinesh.webp"
                   alt="Divya Umashankar"
+                  width="1078"
+                  height="1168"
+                  loading="lazy"
                   className="aspect-square h-full w-full max-w-full object-cover object-center"
                 />
               </div>

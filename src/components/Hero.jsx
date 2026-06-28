@@ -69,8 +69,11 @@ function Hero() {
         <div className="relative mx-auto flex w-full max-w-full items-center justify-center overflow-hidden pt-4 sm:min-h-[360px] lg:min-h-[440px] lg:overflow-visible xl:min-h-[460px]">
           <div className="absolute left-1/2 top-1/2 h-[230px] w-[230px] max-w-[80vw] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/70 bg-[#FF477E]/12 shadow-[0_18px_55px_rgba(3,83,164,0.12)] sm:h-[320px] sm:w-[320px] lg:h-[390px] lg:w-[390px]" />
           <img
-            src="/mother-feeding.png"
+            src="/mother-feeding.webp"
             alt="Mother holding and feeding a baby"
+            width="1536"
+            height="1024"
+            fetchPriority="high"
             className="relative z-10 h-auto max-h-[460px] w-full max-w-full object-contain pt-4 mix-blend-multiply sm:pt-6"
           />
         </div>

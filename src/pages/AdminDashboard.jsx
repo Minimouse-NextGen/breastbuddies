@@ -714,7 +714,13 @@ function AdminDashboard({ session }) {
         <div className="flex min-h-[72px] items-center justify-between border-b border-[#E2E8F0] px-4 py-4">
           <div className="flex items-center gap-3">
             <div className="grid h-9 w-9 place-items-center rounded-full border border-[#E2E8F0] bg-white">
-              <img src="/favicon.png" alt="BreastBuddies logo" className="h-6 w-6 rounded-full object-cover" />
+              <img
+                src="/favicon.webp"
+                alt="BreastBuddies logo"
+                width="1024"
+                height="1024"
+                className="h-6 w-6 rounded-full object-cover"
+              />
             </div>
             <div className="min-w-0 font-playfair text-[20px] font-bold leading-none">
               <span className="text-[#FF477E]">Breast</span>

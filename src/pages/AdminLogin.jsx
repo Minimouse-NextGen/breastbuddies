@@ -80,7 +80,7 @@ function AdminLogin({ session }) {
           <div
             className="absolute inset-0"
             style={{
-              backgroundImage: "url('/admin-left-bg.png')",
+              backgroundImage: "url('/admin-left-bg.webp')",
               backgroundPosition: "center",
               backgroundRepeat: "no-repeat",
               backgroundSize: "cover",
@@ -121,8 +121,10 @@ function AdminLogin({ session }) {
           </div>
 
           <img
-            src="/admin-left-momchild.png"
+            src="/admin-left-momchild.webp"
             alt=""
+            width="1130"
+            height="908"
             className="pointer-events-none absolute bottom-[clamp(10px,2.4vh,28px)] left-[clamp(20px,3vw,44px)] z-0 h-auto max-h-[53vh] w-[clamp(520px,36vw,680px)] object-contain"
             aria-hidden="true"
           />
@@ -137,8 +139,10 @@ function AdminLogin({ session }) {
             >
               <div className="flex flex-col items-center text-center">
                 <img
-                  src="/login-shield.png"
+                  src="/login-shield.webp"
                   alt=""
+                  width="625"
+                  height="625"
                   className="mb-3 h-[84px] w-[84px] object-contain xl:h-[92px] xl:w-[92px]"
                   aria-hidden="true"
                 />
@@ -264,8 +268,10 @@ function AdminLogin({ session }) {
             >
               <div className="flex flex-col items-center text-center">
                 <img
-                  src="/login-shield.png"
+                  src="/login-shield.webp"
                   alt=""
+                  width="625"
+                  height="625"
                   className="mb-4 h-14 w-14 object-contain"
                   aria-hidden="true"
                 />

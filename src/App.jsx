@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { Helmet } from "react-helmet-async"
 import { Navigate, Route, Routes, useLocation } from "react-router-dom"
 import AboutDivya from "./components/AboutDivya"
 import BookingForm from "./components/BookingForm"
@@ -17,6 +18,60 @@ import AdminLogin from "./pages/AdminLogin"
 import { verifyAdminAccess } from "./services/adminAccess"
 import { isSupabaseConfigured, supabase } from "./services/supabaseClient"
 import { getSectionIdFromPathname } from "./utils/sectionRoutes"
+
+const PUBLIC_SITE_URL = "https://www.breastbuddies.co.in"
+
+const routeMeta = {
+  "/": {
+    title: "BreastBuddies | Lactation Consultant in Chennai",
+    description:
+      "Certified lactation consultant in Chennai. Latch help, milk supply support, newborn feeding guidance. Online consults available.",
+    canonicalPath: "/",
+  },
+  "/services": {
+    title: "Services | BreastBuddies Lactation Support",
+    description:
+      "Latch assessment, milk supply support, tongue-tie guidance & newborn feeding help — in-person in Chennai or online.",
+    canonicalPath: "/services",
+  },
+  "/about-divya": {
+    title: "About Divya Umashankar | BreastBuddies",
+    description:
+      "Meet Divya Umashankar, certified lactation consultant supporting Chennai families and clients worldwide.",
+    canonicalPath: "/about-divya",
+  },
+  "/book-consultation": {
+    title: "Book a Consultation | BreastBuddies",
+    description:
+      "Book an in-person or online lactation consultation with BreastBuddies, Chennai.",
+    canonicalPath: "/book-consultation",
+  },
+  "/gallery": {
+    title: "Gallery | BreastBuddies",
+    description:
+      "A look at BreastBuddies' lactation consulting practice in Chennai.",
+    canonicalPath: "/gallery",
+  },
+}
+
+const routeMetaAliases = {
+  "/home": routeMeta["/"],
+  "/about": routeMeta["/about-divya"],
+}
+
+function RouteHead() {
+  const location = useLocation()
+  const meta = routeMeta[location.pathname] ?? routeMetaAliases[location.pathname] ?? routeMeta["/"]
+  const canonicalUrl = `${PUBLIC_SITE_URL}${meta.canonicalPath}`
+
+  return (
+    <Helmet>
+      <title>{meta.title}</title>
+      <meta name="description" content={meta.description} />
+      <link rel="canonical" href={canonicalUrl} />
+    </Helmet>
+  )
+}
 
 function GalleryPlaceholder() {
   return (
@@ -62,6 +117,7 @@ function WebsitePage() {
 
   return (
     <div className="site-shell font-inter text-[#1E2A52]">
+      <RouteHead />
       <Header />
       <main className="pt-[72px]">
         <Hero />
