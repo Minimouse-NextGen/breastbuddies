@@ -1,7 +1,7 @@
 import { SmallIcon } from "./Graphics"
 import WhatsAppCallout from "./WhatsAppCallout"
 
-const whatsappLink = "https://wa.me/917299788877?text=Hello%20BreastBuddies%2C%20I%20would%20like%20to%20book%20a%20lactation%20consultation."
+const whatsappLink = "https://wa.me/917338890927?text=Hello%20BreastBuddies%2C%20I%20would%20like%20to%20book%20a%20lactation%20consultation."
 
 function FloatingWhatsApp() {
   return (
