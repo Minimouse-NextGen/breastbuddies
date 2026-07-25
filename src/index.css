@@ -218,6 +218,125 @@ a {
   background: #F8FBFF;
 }
 
+.promotional-popup-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(16, 26, 56, 0.75);
+  opacity: 0;
+  transition: opacity 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.promotional-popup-overlay.is-visible {
+  opacity: 1;
+}
+
+.promotional-popup-dialog {
+  position: relative;
+  width: min(850px, 92vw);
+  opacity: 0;
+  transform: translateY(10px) scale(0.92);
+  transition:
+    opacity 300ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+
+.promotional-popup-dialog.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.promotional-popup-overlay.is-closing,
+.promotional-popup-dialog.is-closing {
+  transition-duration: 250ms;
+}
+
+.promotional-popup-poster {
+  position: relative;
+  display: block;
+  width: 100%;
+  max-height: 85vh;
+  cursor: pointer;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #f8fbff;
+  box-shadow: 0 24px 60px rgba(16, 26, 56, 0.35);
+  outline: none;
+}
+
+.promotional-popup-poster:focus-visible {
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.8), 0 24px 60px rgba(16, 26, 56, 0.35);
+}
+
+.promotional-popup-image {
+  display: block;
+  width: 100%;
+  max-height: 85vh;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 180ms ease-out;
+}
+
+.promotional-popup-image.is-loaded {
+  opacity: 1;
+}
+
+.promotional-popup-loader {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  min-height: 220px;
+  place-items: center;
+  background: linear-gradient(135deg, #f8fbff, #eaf4ff);
+}
+
+.promotional-popup-loader-spinner {
+  width: 38px;
+  height: 38px;
+  border: 3px solid #b9d7f3;
+  border-top-color: #0353a4;
+  border-radius: 50%;
+  animation: promotionalPopupSpin 800ms linear infinite;
+}
+
+@keyframes promotionalPopupSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (min-width: 640px) {
+  .promotional-popup-overlay {
+    padding: 24px;
+  }
+
+  .promotional-popup-poster,
+  .promotional-popup-image {
+    max-height: 88vh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .promotional-popup-overlay,
+  .promotional-popup-dialog,
+  .promotional-popup-image {
+    transition-duration: 1ms;
+  }
+
+  .promotional-popup-dialog {
+    transform: none;
+  }
+
+  .promotional-popup-loader-spinner {
+    animation: none;
+  }
+}
+
 .section-frame {
   width: min(100% - 32px, 1248px);
   margin-inline: auto;

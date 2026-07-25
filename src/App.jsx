@@ -10,6 +10,7 @@ import { BrandWordmark, LogoMark } from "./components/Graphics"
 import Header from "./components/Header"
 import Hero from "./components/Hero"
 import HowItWorks from "./components/HowItWorks"
+import PromotionalPopup from "./components/PromotionalPopup"
 import Services from "./components/Services"
 import Testimonials from "./components/Testimonials"
 import TrustHighlights from "./components/TrustHighlights"
@@ -132,6 +133,7 @@ function WebsitePage() {
       </main>
       <Footer />
       <FloatingWhatsApp />
+      <PromotionalPopup />
     </div>
   )
 }
