@@ -1,507 +1,96 @@
-import emailjs from "@emailjs/browser"
-import { useEffect, useMemo, useState } from "react"
+import { useState } from "react"
 import {
   CONSULTATION_DETAILS,
   RESPONSE_TIME_MESSAGE,
   WHATSAPP_REASSURANCE_MESSAGE,
 } from "../content/consultationContent"
 import { SmallIcon } from "./Graphics"
-import { createBooking, getUnavailableBookingSlots } from "../services/bookingsService"
 
-const IN_PERSON_MODE = "In-Person Consult (Hospital)"
-const LEGACY_IN_PERSON_MODE = "In-Person Consult(Hospital)"
-const IN_PERSON_LOCATION = "Joseph Hospital, Chetpet"
-const IN_PERSON_DURATION = "Not applicable"
-const IN_PERSON_TIME_SLOT = "To be confirmed"
-const IN_PERSON_PLACEHOLDER_TIME = "12:00 AM"
-const SLOT_REFRESH_ERROR = "Unable to refresh slot availability. Please try again."
-
-const modes = ["Online video call", IN_PERSON_MODE]
-const durations = ["30 minutes", "1 hour"]
-const PUBLIC_BOOKING_DAY_START_MINUTES = 9 * 60
-const PUBLIC_BOOKING_DAY_END_MINUTES = 21 * 60
-
+const consultationModes = ["Online Consultation", "In-Person Consultation"]
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-const indianMobilePattern = /^(?:\+91[\s-]?|91[\s-]?|0)?[6-9]\d{9}$/
-const weekdays = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
-const monthNames = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-]
 
 const initialFormData = {
   fullName: "",
   mobileNumber: "",
-  emailAddress: "",
-  babyInfo: "",
+  email: "",
+  babyAgeOrPregnancyWeek: "",
   primaryConcern: "",
   consultationMode: "",
-  preferredDate: "",
-  consultationDuration: "",
-  preferredTimeSlot: "",
-}
-
-function isInPersonConsultationMode(mode) {
-  return mode === IN_PERSON_MODE || mode === LEGACY_IN_PERSON_MODE
-}
-
-function getTodayInputValue() {
-  const today = new Date()
-  today.setMinutes(today.getMinutes() - today.getTimezoneOffset())
-  return today.toISOString().split("T")[0]
-}
-
-function dateToInputValue(date) {
-  const normalized = new Date(date)
-  normalized.setMinutes(normalized.getMinutes() - normalized.getTimezoneOffset())
-  return normalized.toISOString().split("T")[0]
-}
-
-function formatDisplayDate(inputDate) {
-  if (!inputDate) {
-    return "dd-mm-yyyy"
-  }
-
-  const [year, month, day] = inputDate.split("-")
-  return `${day}-${month}-${year}`
-}
-
-function buildCalendarDays(monthDate) {
-  const year = monthDate.getFullYear()
-  const month = monthDate.getMonth()
-  const firstDay = new Date(year, month, 1)
-  const firstMondayOffset = (firstDay.getDay() + 6) % 7
-  const calendarStart = new Date(year, month, 1 - firstMondayOffset)
-
-  return Array.from({ length: 42 }, (_, index) => {
-    const date = new Date(calendarStart)
-    date.setDate(calendarStart.getDate() + index)
-
-    return {
-      date,
-      inputValue: dateToInputValue(date),
-      isCurrentMonth: date.getMonth() === month,
-      day: date.getDate(),
-    }
-  })
-}
-
-function convertTimeToMinutes(timeValue) {
-  const [time, period] = timeValue.split(" ")
-  const [rawHour, rawMinute] = time.split(":").map(Number)
-  const hour = period === "PM" && rawHour !== 12 ? rawHour + 12 : period === "AM" && rawHour === 12 ? 0 : rawHour
-  return hour * 60 + rawMinute
-}
-
-function convertMinutesToTime(minutes) {
-  const normalizedMinutes = ((minutes % 1440) + 1440) % 1440
-  const hour24 = Math.floor(normalizedMinutes / 60)
-  const minute = normalizedMinutes % 60
-  const period = hour24 >= 12 ? "PM" : "AM"
-  const hour12 = hour24 % 12 || 12
-  return `${String(hour12).padStart(2, "0")}:${String(minute).padStart(2, "0")} ${period}`
-}
-
-function buildTimeSlots(startMinutes, endMinutes, stepMinutes = 30) {
-  const slots = []
-
-  for (let minutes = startMinutes; minutes < endMinutes; minutes += stepMinutes) {
-    slots.push(convertMinutesToTime(minutes))
-  }
-
-  return slots
-}
-
-function getDurationMinutes(duration) {
-  return duration === "1 hour" ? 60 : 30
-}
-
-function getEndTime(startTime, duration) {
-  return convertMinutesToTime(convertTimeToMinutes(startTime) + duration)
-}
-
-function getTimeRange(startTime, duration) {
-  return `${startTime} - ${getEndTime(startTime, duration)}`
-}
-
-function getAvailableStartSlots(duration) {
-  return buildTimeSlots(
-    PUBLIC_BOOKING_DAY_START_MINUTES,
-    PUBLIC_BOOKING_DAY_END_MINUTES - duration + 30,
-  ).filter((slot) => convertTimeToMinutes(slot) + duration <= PUBLIC_BOOKING_DAY_END_MINUTES)
-}
-
-function isSlotInsideSelectedRange(slotTime, selectedStartTime, duration) {
-  if (!selectedStartTime) {
-    return false
-  }
-
-  const slotStart = convertTimeToMinutes(slotTime)
-  const selectedStart = convertTimeToMinutes(selectedStartTime)
-  const selectedEnd = selectedStart + duration
-
-  return slotStart > selectedStart && slotStart < selectedEnd
-}
-
-function doTimeRangesOverlap(rangeStartTime, rangeEndTime, blockedStartTime, blockedEndTime) {
-  const rangeStart = convertTimeToMinutes(rangeStartTime)
-  const rangeEnd = convertTimeToMinutes(rangeEndTime)
-  const blockedStart = convertTimeToMinutes(blockedStartTime)
-  const blockedEnd = convertTimeToMinutes(blockedEndTime)
-
-  return rangeStart < blockedEnd && rangeEnd > blockedStart
-}
-
-function getConflictingUnavailableEntries(startTime, duration, selectedDate, unavailableSlots) {
-  const endTime = getEndTime(startTime, duration)
-
-  return unavailableSlots.filter((slot) => {
-    if (selectedDate && slot.date !== selectedDate) {
-      return false
-    }
-
-    return doTimeRangesOverlap(startTime, endTime, slot.startTime, slot.endTime)
-  })
-}
-
-function getConflictType(slotTime, selectedDate, duration, unavailableSlots) {
-  const conflicts = getConflictingUnavailableEntries(slotTime, duration, selectedDate, unavailableSlots)
-
-  if (conflicts.some((conflict) => conflict.source === "blocked_slot")) {
-    return "blocked"
-  }
-
-  if (conflicts.length > 0) {
-    return "booked"
-  }
-
-  return null
-}
-
-function isSlotSelectable(slotTime, selectedDate, selectedStartTime, duration, existingBookedSlots) {
-  const endsWithinBookingWindow = convertTimeToMinutes(slotTime) + duration <= PUBLIC_BOOKING_DAY_END_MINUTES
-
-  return endsWithinBookingWindow
-    && getConflictingUnavailableEntries(slotTime, duration, selectedDate, existingBookedSlots).length === 0
-    && !isSlotInsideSelectedRange(slotTime, selectedStartTime, duration)
-}
-
-function isConfiguredValue(value, placeholder) {
-  return Boolean(value && value !== placeholder)
 }
 
 function BookingForm() {
-  const minDate = useMemo(() => getTodayInputValue(), [])
   const [formData, setFormData] = useState(initialFormData)
-  const [bookedSlots, setBookedSlots] = useState([])
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false)
-  const [calendarMonth, setCalendarMonth] = useState(() => new Date())
-  const [message, setMessage] = useState("")
-  const [messageType, setMessageType] = useState("error")
   const [errors, setErrors] = useState({})
-  const [isSending, setIsSending] = useState(false)
-  const calendarDays = useMemo(() => buildCalendarDays(calendarMonth), [calendarMonth])
-  const isInPersonConsultation = isInPersonConsultationMode(formData.consultationMode)
-  const durationMinutes = useMemo(
-    () => getDurationMinutes(formData.consultationDuration),
-    [formData.consultationDuration],
-  )
-  const availableStartSlots = useMemo(
-    () => getAvailableStartSlots(durationMinutes),
-    [durationMinutes],
-  )
-
-  useEffect(() => {
-    let isMounted = true
-
-    async function loadUnavailableSlots() {
-      if (!formData.preferredDate || isInPersonConsultation) {
-        setBookedSlots([])
-        return
-      }
-
-      try {
-        const slots = await getUnavailableBookingSlots(formData.preferredDate)
-        if (isMounted) {
-          setBookedSlots(slots)
-        }
-      } catch (error) {
-        if (isMounted) {
-          console.error("Unable to load booked slots", error)
-          setMessageType("error")
-          setMessage(SLOT_REFRESH_ERROR)
-        }
-      }
-    }
-
-    loadUnavailableSlots()
-
-    return () => {
-      isMounted = false
-    }
-  }, [formData.preferredDate, isInPersonConsultation])
 
   function updateField(field, value) {
-    setFormData((current) => ({
-      ...current,
-      [field]: value,
-    }))
+    setFormData((current) => ({ ...current, [field]: value }))
     setErrors((current) => {
       const nextErrors = { ...current }
       delete nextErrors[field]
       return nextErrors
     })
-    setMessage("")
   }
 
   function updateMobileNumber(value) {
-    const sanitized = value.replace(/[^\d+\s-]/g, "").slice(0, 18)
-    updateField("mobileNumber", sanitized)
-  }
-
-  function handleConsultationModeChange(value) {
-    const nextIsInPerson = isInPersonConsultationMode(value)
-
-    setFormData((current) => ({
-      ...current,
-      consultationMode: value,
-      consultationDuration: nextIsInPerson ? "" : current.consultationDuration,
-      preferredTimeSlot: nextIsInPerson ? "" : current.preferredTimeSlot,
-    }))
-    setErrors((current) => {
-      const nextErrors = { ...current }
-      delete nextErrors.consultationMode
-      delete nextErrors.consultationDuration
-      delete nextErrors.preferredTimeSlot
-      return nextErrors
-    })
-    setBookedSlots((current) => (nextIsInPerson ? [] : current))
-    setMessage("")
+    updateField("mobileNumber", value.replace(/[^\d+\s-]/g, "").slice(0, 18))
   }
 
   function validateForm() {
     const nextErrors = {}
-    const mobileNumber = formData.mobileNumber.replace(/[\s-]/g, "")
 
-    if (!formData.fullName.trim()) {
-      nextErrors.fullName = "Please enter your full name."
+    if (!formData.fullName.trim()) nextErrors.fullName = "Please enter your full name."
+    if (!formData.mobileNumber.trim()) nextErrors.mobileNumber = "Please enter your mobile number."
+
+    if (!formData.email.trim()) {
+      nextErrors.email = "Please enter your email address."
+    } else if (!emailPattern.test(formData.email.trim())) {
+      nextErrors.email = "Please enter a valid email address."
     }
 
-    if (!formData.mobileNumber.trim()) {
-      nextErrors.mobileNumber = "Please enter your mobile number."
-    } else if (!indianMobilePattern.test(mobileNumber)) {
-      nextErrors.mobileNumber = "Please enter a valid Indian mobile number."
+    if (!formData.babyAgeOrPregnancyWeek.trim()) {
+      nextErrors.babyAgeOrPregnancyWeek = "Please enter the baby age or pregnancy week."
     }
-
-    if (!formData.emailAddress.trim()) {
-      nextErrors.emailAddress = "Please enter your email address."
-    } else if (!emailPattern.test(formData.emailAddress.trim())) {
-      nextErrors.emailAddress = "Please enter a valid email address."
-    }
-
-    if (!formData.babyInfo.trim()) {
-      nextErrors.babyInfo = "Please enter the baby age or pregnancy week."
-    }
-
-    if (!formData.primaryConcern.trim()) {
-      nextErrors.primaryConcern = "Please tell us your primary concern."
-    }
-
+    if (!formData.primaryConcern.trim()) nextErrors.primaryConcern = "Please tell us your primary concern."
     if (!formData.consultationMode) {
       nextErrors.consultationMode = "Please select a preferred consultation mode."
-    }
-
-    if (!formData.preferredDate) {
-      nextErrors.preferredDate = "Please select a preferred consultation date."
-    }
-
-    if (!isInPersonConsultation && !formData.consultationDuration) {
-      nextErrors.consultationDuration = "Please select a consultation duration."
-    }
-
-    if (!isInPersonConsultation && !formData.preferredTimeSlot) {
-      nextErrors.preferredTimeSlot = "Please select an available time slot."
-    } else if (
-      !isInPersonConsultation
-      && formData.preferredTimeSlot
-      && formData.preferredDate
-      && formData.consultationDuration
-      && !isSlotSelectable(
-        formData.preferredTimeSlot,
-        formData.preferredDate,
-        "",
-        getDurationMinutes(formData.consultationDuration),
-        bookedSlots,
-      )
-    ) {
-      nextErrors.preferredTimeSlot = "Please choose a time slot that is still available."
     }
 
     setErrors(nextErrors)
     return Object.keys(nextErrors).length === 0
   }
 
-  async function handleSubmit(event) {
+  function handleSubmit(event) {
     event.preventDefault()
 
-    if (!validateForm()) {
-      setMessageType("error")
-      setMessage("Please complete the highlighted fields before submitting.")
-      return
+    if (!validateForm()) return
+
+    const consultationRequest = {
+      fullName: formData.fullName.trim(),
+      mobileNumber: formData.mobileNumber.trim(),
+      email: formData.email.trim(),
+      babyAgeOrPregnancyWeek: formData.babyAgeOrPregnancyWeek.trim(),
+      primaryConcern: formData.primaryConcern.trim(),
+      consultationMode: formData.consultationMode,
     }
 
-      const durationMinutes = isInPersonConsultation ? 0 : getDurationMinutes(formData.consultationDuration)
-    const consultationDuration = isInPersonConsultation ? IN_PERSON_DURATION : formData.consultationDuration
-    const selectedSlotRange = isInPersonConsultation
-      ? IN_PERSON_TIME_SLOT
-      : getTimeRange(formData.preferredTimeSlot, durationMinutes)
-    const selectedStartTime = isInPersonConsultation ? IN_PERSON_PLACEHOLDER_TIME : formData.preferredTimeSlot
-    const selectedEndTime = isInPersonConsultation ? IN_PERSON_PLACEHOLDER_TIME : getEndTime(formData.preferredTimeSlot, durationMinutes)
-    const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID
-    const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID
-    const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY
-    const canSendEmail = isConfiguredValue(serviceId, "YOUR_SERVICE_ID")
-      && isConfiguredValue(templateId, "YOUR_TEMPLATE_ID")
-      && isConfiguredValue(publicKey, "YOUR_PUBLIC_KEY")
-
-    const templateParams = {
-      subject: "New Consultation Request - BreastBuddies",
-      to_email: "divya.us@gmail.com",
-      full_name: formData.fullName,
-      mobile_number: formData.mobileNumber,
-      email_address: formData.emailAddress,
-      baby_info: formData.babyInfo,
-      primary_concern: formData.primaryConcern,
-      consultation_mode: formData.consultationMode,
-      preferred_date: formData.preferredDate,
-      preferred_time_slot: selectedSlotRange,
-      consultation_duration: consultationDuration,
-      location: isInPersonConsultation ? IN_PERSON_LOCATION : "",
-      submitted_from: "BreastBuddies Website",
-      message: `A new consultation request has been submitted.
-
-Full Name:
-${formData.fullName}
-
-Mobile Number:
-${formData.mobileNumber}
-
-Email Address:
-${formData.emailAddress}
-
-Baby Age / Pregnancy Week:
-${formData.babyInfo}
-
-Primary Concern:
-${formData.primaryConcern}
-
-Consultation Mode:
-${formData.consultationMode}
-
-Preferred Date:
-${formData.preferredDate}
-
-Preferred Time Slot:
-${selectedSlotRange}
-
-Consultation Duration:
-${consultationDuration}
-
-Location:
-${isInPersonConsultation ? IN_PERSON_LOCATION : "Online"}
-
-Submitted From:
-BreastBuddies Website`,
-    }
-
-    console.log("Consultation Request Submitted", formData)
-
-    try {
-      setIsSending(true)
-      if (!isInPersonConsultation) {
-        const latestBookedSlots = await getUnavailableBookingSlots(formData.preferredDate)
-        setBookedSlots(latestBookedSlots)
-
-        if (!isSlotSelectable(
-          formData.preferredTimeSlot,
-          formData.preferredDate,
-          "",
-          durationMinutes,
-          latestBookedSlots,
-        )) {
-          setMessageType("error")
-          setMessage("This time slot is not available. Please choose another time.")
-          return
-        }
-      }
-
-      await createBooking({
-        ...formData,
-        consultationDuration,
-        preferredTimeSlot: selectedSlotRange,
-        location: isInPersonConsultation ? IN_PERSON_LOCATION : "",
-        startTime: selectedStartTime,
-        endTime: selectedEndTime,
-        slotRange: selectedSlotRange,
-        durationMinutes,
-      })
-
-      if (canSendEmail) {
-        await emailjs.send(serviceId, templateId, templateParams, { publicKey })
-      }
-
-      setMessageType("success")
-      setMessage(
-        "Thank you. Your consultation request has been received. We will contact you shortly via WhatsApp or email.",
-      )
-      setFormData(initialFormData)
-      setBookedSlots([])
-      setErrors({})
-      setIsCalendarOpen(false)
-    } catch (error) {
-      console.error("Consultation request failed", error)
-      setMessageType("error")
-      setMessage(
-        error.code === "23P01"
-          ? "This time slot is not available. Please choose another time."
-          : "Something went wrong. Please try again or contact us through WhatsApp.",
-      )
-    } finally {
-      setIsSending(false)
-    }
+    // TODO: Connect this form submission to EmailJS.
+    console.log("Consultation request ready for submission", consultationRequest)
   }
 
   return (
     <section id="booking" className="bg-gradient-to-b from-[#eaf7ff] to-[#f6fbff] pb-8 pt-4 lg:pb-10 lg:pt-6">
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center">
-          <h2 className="heading-h2">
-            Book an Online Lactation Consultation in India
-          </h2>
+          <h2 className="heading-h2">Request a Consultation</h2>
           <div className="mx-auto mt-3 h-3 w-8 rounded-full bg-[#ffb6ca]" />
           <p className="mx-auto mt-5 max-w-3xl font-inter text-base font-normal leading-7 text-[#1E2A52]/85">
-            Fill out the form below and Divya Umashankar will personally
-            connect with you on WhatsApp to understand your concerns, answer
-            your questions, and guide you toward the support that best meets
-            your family's needs.
+            Tell us a little about the support you need and Divya Umashankar will personally
+            connect with you on WhatsApp to understand your concerns and guide you toward the
+            support that best meets your family&apos;s needs.
           </p>
           <div className="mt-4 space-y-2">
-            <p className="font-inter text-sm font-semibold text-[#0353A4]">
-              {WHATSAPP_REASSURANCE_MESSAGE}
-            </p>
-            <p className="font-inter text-sm font-semibold text-[#0353A4]/85">
-              {RESPONSE_TIME_MESSAGE}
-            </p>
+            <p className="font-inter text-sm font-semibold text-[#0353A4]">{WHATSAPP_REASSURANCE_MESSAGE}</p>
+            <p className="font-inter text-sm font-semibold text-[#0353A4]/85">{RESPONSE_TIME_MESSAGE}</p>
           </div>
         </div>
 
@@ -512,30 +101,20 @@ BreastBuddies Website`,
                 <SmallIcon type="info" color="#0353A4" className="h-5 w-5" />
               </span>
               <div className="mt-5">
-                <p className="font-inter text-base font-bold leading-6 text-[#1E2A52]">
-                  Care Guidance
-                </p>
+                <p className="font-inter text-base font-bold leading-6 text-[#1E2A52]">Care Guidance</p>
                 <p className="mt-3 font-inter text-base font-semibold leading-7 text-[#1E2A52]/85">
                   Online consultations have limitations. Cases that require in-person assessment of
-                  the baby or mother may be referred for offline care to support the best possible
-                  outcomes.
+                  the baby or mother may be referred for offline care to support the best possible outcomes.
                 </p>
               </div>
             </div>
 
             <div className="rounded-3xl border border-[#DDE8F7] bg-white p-6 shadow-[0_12px_30px_rgba(30,42,82,0.07)] lg:p-8">
-              <p className="font-playfair text-2xl font-bold text-[#1E2A52]">
-                {CONSULTATION_DETAILS.title}
-              </p>
-              <p className="mt-3 font-inter text-sm leading-7 text-[#1E2A52]/80">
-                {CONSULTATION_DETAILS.description}
-              </p>
+              <p className="font-playfair text-2xl font-bold text-[#1E2A52]">{CONSULTATION_DETAILS.title}</p>
+              <p className="mt-3 font-inter text-sm leading-7 text-[#1E2A52]/80">{CONSULTATION_DETAILS.description}</p>
               <ul className="mt-5 space-y-3">
                 {CONSULTATION_DETAILS.points.map((point) => (
-                  <li
-                    key={point}
-                    className="flex items-start gap-3 font-inter text-sm leading-7 text-[#1E2A52]/82"
-                  >
+                  <li key={point} className="flex items-start gap-3 font-inter text-sm leading-7 text-[#1E2A52]/82">
                     <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-[#FF477E]" />
                     <span>{point}</span>
                   </li>
@@ -544,379 +123,49 @@ BreastBuddies Website`,
             </div>
           </aside>
 
-          <form
-            className="min-w-0 rounded-3xl border border-sky-100 bg-white p-6 shadow-2xl shadow-sky-900/10 sm:p-8 lg:col-span-8 xl:p-10"
-            onSubmit={handleSubmit}
-            noValidate
-          >
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3 [&>*]:min-w-0">
-            <label className="block">
-              <span className="font-inter text-sm font-semibold text-[#1E2A52]">Full Name</span>
-              <input
-                type="text"
-                name="fullName"
-                required
-                value={formData.fullName}
-                onChange={(event) => updateField("fullName", event.target.value)}
-                className="mt-2 h-[58px] w-full rounded-lg border border-slate-200 bg-white px-4 font-inter text-[#1E2A52] outline-none transition placeholder:text-slate-400 focus:border-[#0353A4] focus:ring-4 focus:ring-sky-100"
-                placeholder="Enter your full name"
-              />
-              {errors.fullName && <p className="mt-2 font-inter text-xs font-semibold text-[#B8325C]">{errors.fullName}</p>}
-            </label>
-
-            <label className="block">
-              <span className="font-inter text-sm font-semibold text-[#1E2A52]">Mobile Number</span>
-              <input
-                type="tel"
-                name="mobile"
-                required
-                value={formData.mobileNumber}
-                onChange={(event) => updateMobileNumber(event.target.value)}
-                inputMode="numeric"
-                maxLength="18"
-                className="mt-2 h-[58px] w-full rounded-lg border border-slate-200 bg-white px-4 font-inter text-[#1E2A52] outline-none transition placeholder:text-slate-400 focus:border-[#0353A4] focus:ring-4 focus:ring-sky-100"
-                placeholder="e.g. +91 98765 43210"
-              />
-              {errors.mobileNumber && <p className="mt-2 font-inter text-xs font-semibold text-[#B8325C]">{errors.mobileNumber}</p>}
-            </label>
-
-            <label className="block">
-              <span className="font-inter text-sm font-semibold text-[#1E2A52]">Email Address</span>
-              <input
-                type="email"
-                name="email"
-                required
-                value={formData.emailAddress}
-                onChange={(event) => updateField("emailAddress", event.target.value)}
-                className="mt-2 h-[58px] w-full rounded-lg border border-slate-200 bg-white px-4 font-inter text-[#1E2A52] outline-none transition placeholder:text-slate-400 focus:border-[#0353A4] focus:ring-4 focus:ring-sky-100"
-                placeholder="Enter your email"
-              />
-              {errors.emailAddress && <p className="mt-2 font-inter text-xs font-semibold text-[#B8325C]">{errors.emailAddress}</p>}
-            </label>
-
-            <label className="block">
-              <span className="font-inter text-sm font-semibold text-[#1E2A52]">Baby Age / Pregnancy Week</span>
-              <input
-                type="text"
-                name="babyAge"
-                required
-                value={formData.babyInfo}
-                onChange={(event) => updateField("babyInfo", event.target.value)}
-                className="mt-2 h-[58px] w-full rounded-lg border border-slate-200 bg-white px-4 font-inter text-[#1E2A52] outline-none transition placeholder:text-slate-400 focus:border-[#0353A4] focus:ring-4 focus:ring-sky-100"
-                placeholder="e.g. 8 weeks / 3 months"
-              />
-              {errors.babyInfo && <p className="mt-2 font-inter text-xs font-semibold text-[#B8325C]">{errors.babyInfo}</p>}
-            </label>
-
-            <label className="block md:col-span-2">
-              <span className="font-inter text-sm font-semibold text-[#1E2A52]">Primary Concern</span>
-              <textarea
-                name="concern"
-                rows="3"
-                required
-                value={formData.primaryConcern}
-                onChange={(event) => updateField("primaryConcern", event.target.value)}
-                className="mt-2 w-full resize-none rounded-lg border border-slate-200 bg-white px-4 py-3.5 font-inter text-[#1E2A52] outline-none transition placeholder:text-slate-400 focus:border-[#0353A4] focus:ring-4 focus:ring-sky-100"
-                placeholder="Tell us a little bit about what you're experiencing..."
-              />
-              {errors.primaryConcern && <p className="mt-2 font-inter text-xs font-semibold text-[#B8325C]">{errors.primaryConcern}</p>}
-            </label>
-
-            <label className="block">
-              <span className="font-inter text-sm font-semibold text-[#1E2A52]">Preferred Consultation Mode</span>
-              <select
-                name="mode"
-                required
-                className="mt-2 h-[58px] w-full rounded-lg border border-slate-200 bg-white px-4 font-inter text-[#1E2A52] outline-none transition focus:border-[#0353A4] focus:ring-4 focus:ring-sky-100"
-                value={formData.consultationMode}
-                onChange={(event) => handleConsultationModeChange(event.target.value)}
-              >
-                <option value="" disabled>
-                  Select mode
-                </option>
-                {modes.map((mode) => (
-                  <option key={mode}>{mode}</option>
-                ))}
-              </select>
-              {errors.consultationMode && <p className="mt-2 font-inter text-xs font-semibold text-[#B8325C]">{errors.consultationMode}</p>}
-            </label>
-
-            <div className="relative">
-              <span className="font-inter text-sm font-semibold text-[#1E2A52]">Preferred Date</span>
-              <button
-                type="button"
-                onClick={() => setIsCalendarOpen((current) => !current)}
-                className="mt-2 flex h-[58px] w-full items-center justify-between rounded-xl border border-sky-200 bg-white px-4 text-left font-inter text-[#1E2A52] outline-none transition hover:border-[#0353A4] hover:bg-[#F8FBFF] focus:border-[#0353A4] focus:ring-4 focus:ring-sky-100"
-                aria-expanded={isCalendarOpen}
-                aria-label="Choose preferred date"
-              >
-                <span className={formData.preferredDate ? "font-medium" : "text-slate-400"}>
-                  {formatDisplayDate(formData.preferredDate)}
-                </span>
-                <span className="grid h-9 w-9 place-items-center rounded-xl bg-[#F8FBFF] text-[#1E2A52]">
-                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
-                    <path
-                      d="M7 3v3M17 3v3M4 9h16M6 5h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </span>
-              </button>
-
-              {isCalendarOpen && (
-                <div className="absolute left-0 top-full z-30 mt-3 w-full min-w-0 rounded-3xl border border-sky-100 bg-white p-4 shadow-2xl shadow-sky-900/15">
-                  <div className="flex items-center justify-between">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setCalendarMonth((current) => new Date(current.getFullYear(), current.getMonth() - 1, 1))
-                      }}
-                      className="grid h-10 w-10 place-items-center rounded-xl text-[#1E2A52] transition hover:bg-[#F8FBFF]"
-                      aria-label="Previous month"
-                    >
-                      ←
-                    </button>
-                    <div className="text-center">
-                      <p className="font-playfair text-xl font-bold text-[#1E2A52]">
-                        {monthNames[calendarMonth.getMonth()]} {calendarMonth.getFullYear()}
-                      </p>
-                      <p className="mt-0.5 font-inter text-xs font-medium text-[#1E2A52]/55">
-                        Select a consultation date
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setCalendarMonth((current) => new Date(current.getFullYear(), current.getMonth() + 1, 1))
-                      }}
-                      className="grid h-10 w-10 place-items-center rounded-xl text-[#1E2A52] transition hover:bg-[#F8FBFF]"
-                      aria-label="Next month"
-                    >
-                      →
-                    </button>
-                  </div>
-
-                  <div className="mt-5 grid grid-cols-7 gap-2">
-                    {weekdays.map((day) => (
-                      <div key={day} className="text-center font-inter text-xs font-semibold text-[#1E2A52]/55">
-                        {day}
-                      </div>
-                    ))}
-                    {calendarDays.map((item) => {
-                      const isPast = item.inputValue < minDate
-                      const isSelected = item.inputValue === formData.preferredDate
-
-                      return (
-                        <button
-                          key={item.inputValue}
-                          type="button"
-                          disabled={isPast}
-                          onClick={() => {
-                            setFormData((current) => ({
-                              ...current,
-                              preferredDate: item.inputValue,
-                              preferredTimeSlot: "",
-                            }))
-                            setErrors((current) => {
-                              const nextErrors = { ...current }
-                              delete nextErrors.preferredDate
-                              delete nextErrors.preferredTimeSlot
-                              return nextErrors
-                            })
-                            setIsCalendarOpen(false)
-                            setMessage("")
-                          }}
-                          className={`grid h-10 place-items-center rounded-2xl font-inter text-sm font-semibold transition-all ${
-                            isSelected
-                              ? "bg-[#0353A4] text-white shadow-lg shadow-blue-500/20"
-                              : item.isCurrentMonth
-                                ? "text-[#1E2A52] hover:bg-[#EAF4FF] hover:text-[#0353A4]"
-                                : "text-[#1E2A52]/30 hover:bg-[#F8FBFF]"
-                          } ${isPast ? "cursor-not-allowed opacity-30 hover:bg-transparent hover:text-[#1E2A52]/30" : ""}`}
-                        >
-                          {item.day}
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
-              )}
-              {errors.preferredDate && <p className="mt-2 font-inter text-xs font-semibold text-[#B8325C]">{errors.preferredDate}</p>}
-            </div>
-
-            {isInPersonConsultation ? (
-              <div className="block">
-                <span className="font-inter text-sm font-semibold text-[#1E2A52]">Location</span>
-                <div className="mt-2 rounded-xl border border-sky-300 bg-sky-50/70 px-4 py-4 text-[#1E2A52] shadow-sm shadow-sky-900/5">
-                  <p className="font-inter text-sm font-semibold">{IN_PERSON_LOCATION}</p>
-                  <p className="mt-2 font-inter text-sm leading-6 text-[#1E2A52]/75">
-                    Hospital consultation timing will be coordinated based on Joseph Hospital outpatient availability. After submitting your request, we will contact you to confirm the suitable time.
-                  </p>
-                </div>
-              </div>
-            ) : (
+          <form className="min-w-0 rounded-3xl border border-sky-100 bg-white p-6 shadow-2xl shadow-sky-900/10 sm:p-8 lg:col-span-8 xl:p-10" onSubmit={handleSubmit} noValidate>
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 [&>*]:min-w-0">
               <label className="block">
-                <span className="font-inter text-sm font-semibold text-[#1E2A52]">Consultation Duration</span>
-                <select
-                  name="duration"
-                  required
-                  value={formData.consultationDuration}
-                  onChange={(event) => {
-                    setFormData((current) => ({
-                      ...current,
-                      consultationDuration: event.target.value,
-                      preferredTimeSlot: "",
-                    }))
-                    setErrors((current) => {
-                      const nextErrors = { ...current }
-                      delete nextErrors.consultationDuration
-                      delete nextErrors.preferredTimeSlot
-                      return nextErrors
-                    })
-                    setMessage("")
-                  }}
-                  className="mt-2 h-[58px] w-full rounded-xl border border-sky-200 bg-white px-4 font-inter text-[#1E2A52] outline-none transition focus:border-[#0353A4] focus:ring-4 focus:ring-sky-100"
-                >
-                  <option value="" disabled>
-                    Select duration
-                  </option>
-                  {durations.map((option) => (
-                    <option key={option}>{option}</option>
-                  ))}
-                </select>
-                {errors.consultationDuration && <p className="mt-2 font-inter text-xs font-semibold text-[#B8325C]">{errors.consultationDuration}</p>}
+                <span className="font-inter text-sm font-semibold text-[#1E2A52]">Full Name</span>
+                <input type="text" name="fullName" required value={formData.fullName} onChange={(event) => updateField("fullName", event.target.value)} className="mt-2 h-[58px] w-full rounded-lg border border-slate-200 bg-white px-4 font-inter text-[#1E2A52] outline-none transition placeholder:text-slate-400 focus:border-[#0353A4] focus:ring-4 focus:ring-sky-100" placeholder="Enter your full name" />
+                {errors.fullName && <p className="mt-2 font-inter text-xs font-semibold text-[#B8325C]">{errors.fullName}</p>}
               </label>
-            )}
-          </div>
 
-          {!isInPersonConsultation && (
-            <div className="mt-6 rounded-3xl border border-sky-100 bg-[#F8FBFF] p-4 sm:p-5">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <p className="font-inter text-base font-semibold text-[#1E2A52]">Preferred Time Slot</p>
-                  <p className="mt-1 font-inter text-sm text-[#1E2A52]/65">
-                    Select a date and duration, then choose a time range that works for you.
-                  </p>
-                </div>
-                <div className="rounded-2xl bg-white px-4 py-3 text-left shadow-sm shadow-sky-900/5 sm:text-right">
-                  <p className="font-inter text-xs font-semibold uppercase tracking-[0.16em] text-[#0353A4]">
-                    SELECTION
-                  </p>
-                  <p className="mt-1 font-inter text-sm font-semibold text-[#1E2A52]">
-                    {formData.preferredTimeSlot
-                      ? getTimeRange(
-                          formData.preferredTimeSlot,
-                          getDurationMinutes(formData.consultationDuration),
-                        )
-                      : "No slot selected"}
-                  </p>
-                </div>
-              </div>
+              <label className="block">
+                <span className="font-inter text-sm font-semibold text-[#1E2A52]">Mobile Number</span>
+                <input type="tel" name="mobileNumber" required value={formData.mobileNumber} onChange={(event) => updateMobileNumber(event.target.value)} inputMode="tel" maxLength="18" className="mt-2 h-[58px] w-full rounded-lg border border-slate-200 bg-white px-4 font-inter text-[#1E2A52] outline-none transition placeholder:text-slate-400 focus:border-[#0353A4] focus:ring-4 focus:ring-sky-100" placeholder="e.g. +91 98765 43210" />
+                {errors.mobileNumber && <p className="mt-2 font-inter text-xs font-semibold text-[#B8325C]">{errors.mobileNumber}</p>}
+              </label>
 
-              {formData.preferredDate && formData.consultationDuration ? (
-                <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                  {availableStartSlots.map((slot) => {
-                    const isSelected = formData.preferredTimeSlot === slot
-                    const conflictType = getConflictType(
-                      slot,
-                      formData.preferredDate,
-                      durationMinutes,
-                      bookedSlots,
-                    )
-                    const isRangeBooked = getConflictingUnavailableEntries(
-                      slot,
-                      durationMinutes,
-                      formData.preferredDate,
-                      bookedSlots,
-                    ).length > 0
-                    const isIncluded = isSlotInsideSelectedRange(
-                      slot,
-                      formData.preferredTimeSlot,
-                      durationMinutes,
-                    )
-                    const isSelectable = isSelected || isSlotSelectable(
-                      slot,
-                      formData.preferredDate,
-                      formData.preferredTimeSlot,
-                      durationMinutes,
-                      bookedSlots,
-                    )
-                    const range = getTimeRange(slot, durationMinutes)
+              <label className="block">
+                <span className="font-inter text-sm font-semibold text-[#1E2A52]">Email Address</span>
+                <input type="email" name="email" required value={formData.email} onChange={(event) => updateField("email", event.target.value)} className="mt-2 h-[58px] w-full rounded-lg border border-slate-200 bg-white px-4 font-inter text-[#1E2A52] outline-none transition placeholder:text-slate-400 focus:border-[#0353A4] focus:ring-4 focus:ring-sky-100" placeholder="Enter your email" />
+                {errors.email && <p className="mt-2 font-inter text-xs font-semibold text-[#B8325C]">{errors.email}</p>}
+              </label>
 
-                    return (
-                      <button
-                        key={slot}
-                        type="button"
-                        disabled={!isSelectable}
-                        onClick={() => {
-                          if (!isSelectable) {
-                            return
-                          }
-                          updateField("preferredTimeSlot", slot)
-                          setMessage("")
-                        }}
-                        className={`group rounded-2xl border px-4 py-3 text-left font-inter transition-all duration-300 ${
-                          isSelected
-                            ? "border-[#0353A4] bg-[#EAF4FF] text-[#1E2A52] shadow-md shadow-blue-500/10"
-                            : isIncluded || isRangeBooked
-                              ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400 opacity-70"
-                            : "border-sky-100 bg-white text-[#1E2A52]/80 hover:-translate-y-0.5 hover:border-[#0353A4] hover:bg-white hover:shadow-md hover:shadow-sky-900/5"
-                        }`}
-                        aria-pressed={isSelected}
-                      >
-                        <span className="block text-base font-semibold">{slot}</span>
-                        <span
-                          className={`mt-1 block text-xs font-medium ${
-                            isSelected
-                              ? "text-[#0353A4]"
-                              : isIncluded || isRangeBooked
-                                ? "text-slate-400"
-                                : "text-[#1E2A52]/55 group-hover:text-[#0353A4]"
-                          }`}
-                        >
-                          {isRangeBooked
-                            ? conflictType === "blocked"
-                              ? "Not available"
-                              : "Booked"
-                            : isIncluded
-                              ? "Included"
-                              : range}
-                        </span>
-                      </button>
-                    )
-                  })}
-                </div>
-              ) : (
-                <div className="mt-4 rounded-xl border border-dashed border-sky-200 bg-[#F8FBFF] px-4 py-5 font-inter text-sm text-[#1E2A52]/65">
-                  Available time slots will appear here after selecting a date and duration.
-                </div>
-              )}
-              {errors.preferredTimeSlot && <p className="mt-3 font-inter text-xs font-semibold text-[#B8325C]">{errors.preferredTimeSlot}</p>}
+              <label className="block">
+                <span className="font-inter text-sm font-semibold text-[#1E2A52]">Baby Age / Pregnancy Week</span>
+                <input type="text" name="babyAgeOrPregnancyWeek" required value={formData.babyAgeOrPregnancyWeek} onChange={(event) => updateField("babyAgeOrPregnancyWeek", event.target.value)} className="mt-2 h-[58px] w-full rounded-lg border border-slate-200 bg-white px-4 font-inter text-[#1E2A52] outline-none transition placeholder:text-slate-400 focus:border-[#0353A4] focus:ring-4 focus:ring-sky-100" placeholder="e.g. 8 weeks / 3 months / 28 weeks pregnant" />
+                {errors.babyAgeOrPregnancyWeek && <p className="mt-2 font-inter text-xs font-semibold text-[#B8325C]">{errors.babyAgeOrPregnancyWeek}</p>}
+              </label>
+
+              <label className="block md:col-span-2">
+                <span className="font-inter text-sm font-semibold text-[#1E2A52]">Primary Concern</span>
+                <textarea name="primaryConcern" rows="4" required value={formData.primaryConcern} onChange={(event) => updateField("primaryConcern", event.target.value)} className="mt-2 w-full resize-none rounded-lg border border-slate-200 bg-white px-4 py-3.5 font-inter text-[#1E2A52] outline-none transition placeholder:text-slate-400 focus:border-[#0353A4] focus:ring-4 focus:ring-sky-100" placeholder="Tell us a little about the feeding concern or support you are looking for..." />
+                {errors.primaryConcern && <p className="mt-2 font-inter text-xs font-semibold text-[#B8325C]">{errors.primaryConcern}</p>}
+              </label>
+
+              <label className="block md:col-span-2">
+                <span className="font-inter text-sm font-semibold text-[#1E2A52]">Preferred Consultation Mode</span>
+                <select name="consultationMode" required value={formData.consultationMode} onChange={(event) => updateField("consultationMode", event.target.value)} className="mt-2 h-[58px] w-full rounded-lg border border-slate-200 bg-white px-4 font-inter text-[#1E2A52] outline-none transition focus:border-[#0353A4] focus:ring-4 focus:ring-sky-100">
+                  <option value="" disabled>Select mode</option>
+                  {consultationModes.map((mode) => <option key={mode} value={mode}>{mode}</option>)}
+                </select>
+                {errors.consultationMode && <p className="mt-2 font-inter text-xs font-semibold text-[#B8325C]">{errors.consultationMode}</p>}
+              </label>
             </div>
-          )}
 
-          {message && (!isInPersonConsultation || message !== SLOT_REFRESH_ERROR) && (
-            <p
-              className={`mt-5 rounded-xl px-4 py-3 font-inter text-sm font-medium ${
-                messageType === "success"
-                  ? "bg-emerald-50 text-[#1E2A52]"
-                  : "bg-pink-50 text-[#B8325C]"
-              }`}
-            >
-              {message}
-            </p>
-          )}
-
-          <button
-            type="submit"
-            disabled={isSending}
-            className="bb-button bb-button-primary bb-button-full mt-7"
-          >
-            {isSending ? "Sending Request..." : "Request Consultation"}
-          </button>
+            <button type="submit" className="bb-button bb-button-primary bb-button-full mt-7">Request Consultation</button>
           </form>
         </div>
       </div>
