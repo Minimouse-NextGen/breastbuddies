@@ -18,9 +18,13 @@ const initialFormData = {
   consultationMode: "",
 }
 
+const whatsappFollowUpLink =
+  "https://wa.me/917338890927?text=Hello%20BreastBuddies%2C%20I%20just%20submitted%20a%20consultation%20request%20and%20wanted%20to%20follow%20up."
+
 function BookingForm() {
   const [formData, setFormData] = useState(initialFormData)
   const [errors, setErrors] = useState({})
+  const [isSubmitted, setIsSubmitted] = useState(false)
 
   function updateField(field, value) {
     setFormData((current) => ({ ...current, [field]: value }))
@@ -75,6 +79,9 @@ function BookingForm() {
 
     // TODO: Connect this form submission to EmailJS.
     console.log("Consultation request ready for submission", consultationRequest)
+
+    setIsSubmitted(true)
+    setFormData(initialFormData)
   }
 
   return (
@@ -123,50 +130,72 @@ function BookingForm() {
             </div>
           </aside>
 
-          <form className="min-w-0 rounded-3xl border border-sky-100 bg-white p-6 shadow-2xl shadow-sky-900/10 sm:p-8 lg:col-span-8 xl:p-10" onSubmit={handleSubmit} noValidate>
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 [&>*]:min-w-0">
-              <label className="block">
-                <span className="font-inter text-sm font-semibold text-[#1E2A52]">Full Name</span>
-                <input type="text" name="fullName" required value={formData.fullName} onChange={(event) => updateField("fullName", event.target.value)} className="mt-2 h-[58px] w-full rounded-lg border border-slate-200 bg-white px-4 font-inter text-[#1E2A52] outline-none transition placeholder:text-slate-400 focus:border-[#0353A4] focus:ring-4 focus:ring-sky-100" placeholder="Enter your full name" />
-                {errors.fullName && <p className="mt-2 font-inter text-xs font-semibold text-[#B8325C]">{errors.fullName}</p>}
-              </label>
-
-              <label className="block">
-                <span className="font-inter text-sm font-semibold text-[#1E2A52]">Mobile Number</span>
-                <input type="tel" name="mobileNumber" required value={formData.mobileNumber} onChange={(event) => updateMobileNumber(event.target.value)} inputMode="tel" maxLength="18" className="mt-2 h-[58px] w-full rounded-lg border border-slate-200 bg-white px-4 font-inter text-[#1E2A52] outline-none transition placeholder:text-slate-400 focus:border-[#0353A4] focus:ring-4 focus:ring-sky-100" placeholder="e.g. +91 98765 43210" />
-                {errors.mobileNumber && <p className="mt-2 font-inter text-xs font-semibold text-[#B8325C]">{errors.mobileNumber}</p>}
-              </label>
-
-              <label className="block">
-                <span className="font-inter text-sm font-semibold text-[#1E2A52]">Email Address</span>
-                <input type="email" name="email" required value={formData.email} onChange={(event) => updateField("email", event.target.value)} className="mt-2 h-[58px] w-full rounded-lg border border-slate-200 bg-white px-4 font-inter text-[#1E2A52] outline-none transition placeholder:text-slate-400 focus:border-[#0353A4] focus:ring-4 focus:ring-sky-100" placeholder="Enter your email" />
-                {errors.email && <p className="mt-2 font-inter text-xs font-semibold text-[#B8325C]">{errors.email}</p>}
-              </label>
-
-              <label className="block">
-                <span className="font-inter text-sm font-semibold text-[#1E2A52]">Baby Age / Pregnancy Week</span>
-                <input type="text" name="babyAgeOrPregnancyWeek" required value={formData.babyAgeOrPregnancyWeek} onChange={(event) => updateField("babyAgeOrPregnancyWeek", event.target.value)} className="mt-2 h-[58px] w-full rounded-lg border border-slate-200 bg-white px-4 font-inter text-[#1E2A52] outline-none transition placeholder:text-slate-400 focus:border-[#0353A4] focus:ring-4 focus:ring-sky-100" placeholder="e.g. 8 weeks / 3 months / 28 weeks pregnant" />
-                {errors.babyAgeOrPregnancyWeek && <p className="mt-2 font-inter text-xs font-semibold text-[#B8325C]">{errors.babyAgeOrPregnancyWeek}</p>}
-              </label>
-
-              <label className="block md:col-span-2">
-                <span className="font-inter text-sm font-semibold text-[#1E2A52]">Primary Concern</span>
-                <textarea name="primaryConcern" rows="4" required value={formData.primaryConcern} onChange={(event) => updateField("primaryConcern", event.target.value)} className="mt-2 w-full resize-none rounded-lg border border-slate-200 bg-white px-4 py-3.5 font-inter text-[#1E2A52] outline-none transition placeholder:text-slate-400 focus:border-[#0353A4] focus:ring-4 focus:ring-sky-100" placeholder="Tell us a little about the feeding concern or support you are looking for..." />
-                {errors.primaryConcern && <p className="mt-2 font-inter text-xs font-semibold text-[#B8325C]">{errors.primaryConcern}</p>}
-              </label>
-
-              <label className="block md:col-span-2">
-                <span className="font-inter text-sm font-semibold text-[#1E2A52]">Preferred Consultation Mode</span>
-                <select name="consultationMode" required value={formData.consultationMode} onChange={(event) => updateField("consultationMode", event.target.value)} className="mt-2 h-[58px] w-full rounded-lg border border-slate-200 bg-white px-4 font-inter text-[#1E2A52] outline-none transition focus:border-[#0353A4] focus:ring-4 focus:ring-sky-100">
-                  <option value="" disabled>Select mode</option>
-                  {consultationModes.map((mode) => <option key={mode} value={mode}>{mode}</option>)}
-                </select>
-                {errors.consultationMode && <p className="mt-2 font-inter text-xs font-semibold text-[#B8325C]">{errors.consultationMode}</p>}
-              </label>
+          {isSubmitted ? (
+            <div className="flex min-w-0 flex-col items-center justify-center rounded-3xl border border-emerald-200 bg-emerald-50 p-8 text-center shadow-2xl shadow-emerald-900/10 sm:p-10 lg:col-span-8">
+              <span className="grid h-14 w-14 place-items-center rounded-full bg-emerald-100 text-emerald-600">
+                <SmallIcon type="check" color="#059669" className="h-7 w-7" />
+              </span>
+              <p className="mt-5 font-playfair text-2xl font-bold text-[#1E2A52]">Request Received!</p>
+              <p className="mx-auto mt-3 max-w-md font-inter text-base leading-7 text-[#1E2A52]/80">
+                Thanks! We&apos;ve received your request. For the fastest response, message us directly on WhatsApp
+                — we typically reply within a few hours there.
+              </p>
+              <a
+                href={whatsappFollowUpLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-6 inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-6 py-3 font-inter text-sm font-semibold text-white shadow-lg shadow-emerald-900/20 transition hover:bg-emerald-600"
+              >
+                <SmallIcon type="whatsapp" color="#ffffff" className="h-5 w-5" />
+                Message Us on WhatsApp
+              </a>
             </div>
+          ) : (
+            <form className="min-w-0 rounded-3xl border border-sky-100 bg-white p-6 shadow-2xl shadow-sky-900/10 sm:p-8 lg:col-span-8 xl:p-10" onSubmit={handleSubmit} noValidate>
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2 [&>*]:min-w-0">
+                <label className="block">
+                  <span className="font-inter text-sm font-semibold text-[#1E2A52]">Full Name</span>
+                  <input type="text" name="fullName" required value={formData.fullName} onChange={(event) => updateField("fullName", event.target.value)} className="mt-2 h-[58px] w-full rounded-lg border border-slate-200 bg-white px-4 font-inter text-[#1E2A52] outline-none transition placeholder:text-slate-400 focus:border-[#0353A4] focus:ring-4 focus:ring-sky-100" placeholder="Enter your full name" />
+                  {errors.fullName && <p className="mt-2 font-inter text-xs font-semibold text-[#B8325C]">{errors.fullName}</p>}
+                </label>
 
-            <button type="submit" className="bb-button bb-button-primary bb-button-full mt-7">Request Consultation</button>
-          </form>
+                <label className="block">
+                  <span className="font-inter text-sm font-semibold text-[#1E2A52]">Mobile Number</span>
+                  <input type="tel" name="mobileNumber" required value={formData.mobileNumber} onChange={(event) => updateMobileNumber(event.target.value)} inputMode="tel" maxLength="18" className="mt-2 h-[58px] w-full rounded-lg border border-slate-200 bg-white px-4 font-inter text-[#1E2A52] outline-none transition placeholder:text-slate-400 focus:border-[#0353A4] focus:ring-4 focus:ring-sky-100" placeholder="e.g. +91 98765 43210" />
+                  {errors.mobileNumber && <p className="mt-2 font-inter text-xs font-semibold text-[#B8325C]">{errors.mobileNumber}</p>}
+                </label>
+
+                <label className="block">
+                  <span className="font-inter text-sm font-semibold text-[#1E2A52]">Email Address</span>
+                  <input type="email" name="email" required value={formData.email} onChange={(event) => updateField("email", event.target.value)} className="mt-2 h-[58px] w-full rounded-lg border border-slate-200 bg-white px-4 font-inter text-[#1E2A52] outline-none transition placeholder:text-slate-400 focus:border-[#0353A4] focus:ring-4 focus:ring-sky-100" placeholder="Enter your email" />
+                  {errors.email && <p className="mt-2 font-inter text-xs font-semibold text-[#B8325C]">{errors.email}</p>}
+                </label>
+
+                <label className="block">
+                  <span className="font-inter text-sm font-semibold text-[#1E2A52]">Baby Age / Pregnancy Week</span>
+                  <input type="text" name="babyAgeOrPregnancyWeek" required value={formData.babyAgeOrPregnancyWeek} onChange={(event) => updateField("babyAgeOrPregnancyWeek", event.target.value)} className="mt-2 h-[58px] w-full rounded-lg border border-slate-200 bg-white px-4 font-inter text-[#1E2A52] outline-none transition placeholder:text-slate-400 focus:border-[#0353A4] focus:ring-4 focus:ring-sky-100" placeholder="e.g. 8 weeks / 3 months / 28 weeks pregnant" />
+                  {errors.babyAgeOrPregnancyWeek && <p className="mt-2 font-inter text-xs font-semibold text-[#B8325C]">{errors.babyAgeOrPregnancyWeek}</p>}
+                </label>
+
+                <label className="block md:col-span-2">
+                  <span className="font-inter text-sm font-semibold text-[#1E2A52]">Primary Concern</span>
+                  <textarea name="primaryConcern" rows="4" required value={formData.primaryConcern} onChange={(event) => updateField("primaryConcern", event.target.value)} className="mt-2 w-full resize-none rounded-lg border border-slate-200 bg-white px-4 py-3.5 font-inter text-[#1E2A52] outline-none transition placeholder:text-slate-400 focus:border-[#0353A4] focus:ring-4 focus:ring-sky-100" placeholder="Tell us a little about the feeding concern or support you are looking for..." />
+                  {errors.primaryConcern && <p className="mt-2 font-inter text-xs font-semibold text-[#B8325C]">{errors.primaryConcern}</p>}
+                </label>
+
+                <label className="block md:col-span-2">
+                  <span className="font-inter text-sm font-semibold text-[#1E2A52]">Preferred Consultation Mode</span>
+                  <select name="consultationMode" required value={formData.consultationMode} onChange={(event) => updateField("consultationMode", event.target.value)} className="mt-2 h-[58px] w-full rounded-lg border border-slate-200 bg-white px-4 font-inter text-[#1E2A52] outline-none transition focus:border-[#0353A4] focus:ring-4 focus:ring-sky-100">
+                    <option value="" disabled>Select mode</option>
+                    {consultationModes.map((mode) => <option key={mode} value={mode}>{mode}</option>)}
+                  </select>
+                  {errors.consultationMode && <p className="mt-2 font-inter text-xs font-semibold text-[#B8325C]">{errors.consultationMode}</p>}
+                </label>
+              </div>
+
+              <button type="submit" className="bb-button bb-button-primary bb-button-full mt-7">Request Consultation</button>
+            </form>
+          )}
         </div>
       </div>
     </section>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { lazy, Suspense, useEffect, useState } from "react"
 import { Helmet } from "react-helmet-async"
 import { Navigate, Route, Routes, useLocation } from "react-router-dom"
 import AboutDivya from "./components/AboutDivya"
@@ -14,11 +14,23 @@ import PromotionalPopup from "./components/PromotionalPopup"
 import Services from "./components/Services"
 import Testimonials from "./components/Testimonials"
 import TrustHighlights from "./components/TrustHighlights"
-import AdminDashboard from "./pages/AdminDashboard"
-import AdminLogin from "./pages/AdminLogin"
 import { verifyAdminAccess } from "./services/adminAccess"
 import { isSupabaseConfigured, supabase } from "./services/supabaseClient"
+import { NEIGHBORHOODS } from "./content/neighborhoods"
 import { getSectionIdFromPathname } from "./utils/sectionRoutes"
+
+// Code-split: the admin panel and the standalone SEO landing pages are not part
+// of the primary visitor flow through WebsitePage, so they ship as separate
+// chunks instead of bloating the main bundle every visitor downloads.
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"))
+const AdminLogin = lazy(() => import("./pages/AdminLogin"))
+const LactationConsultantChennai = lazy(() => import("./pages/seo/LactationConsultantChennai"))
+const LowMilkSupplyHelpChennai = lazy(() => import("./pages/seo/LowMilkSupplyHelpChennai"))
+const NeighborhoodPage = lazy(() => import("./pages/seo/NeighborhoodPage"))
+const OnlineLactationConsultation = lazy(() => import("./pages/seo/OnlineLactationConsultation"))
+const OnlineLactationConsultationInternational = lazy(() => import("./pages/seo/OnlineLactationConsultationInternational"))
+const OnlineLactationConsultationNRI = lazy(() => import("./pages/seo/OnlineLactationConsultationNRI"))
+const TongueTieAssessmentChennai = lazy(() => import("./pages/seo/TongueTieAssessmentChennai"))
 
 const PUBLIC_SITE_URL = "https://www.breastbuddies.co.in"
 
@@ -71,6 +83,18 @@ function RouteHead() {
       <meta name="description" content={meta.description} />
       <link rel="canonical" href={canonicalUrl} />
     </Helmet>
+  )
+}
+
+function BrandLoadingScreen({ message = "Loading..." }) {
+  return (
+    <main className="grid min-h-screen place-items-center bg-[#F8FAFC] px-4 font-inter text-[#0F172A]">
+      <div className="text-center">
+        <LogoMark className="mx-auto h-16 w-16" />
+        <BrandWordmark className="mt-4 block" sizeClassName="text-3xl" />
+        <p className="mt-3 text-sm font-semibold text-slate-500">{message}</p>
+      </div>
+    </main>
   )
 }
 
@@ -214,46 +238,62 @@ function App() {
   const isAdminLoading = isAuthLoading || isAdminChecking
 
   return (
-    <Routes>
-      <Route path="/" element={<WebsitePage />} />
-      <Route path="/home" element={<WebsitePage />} />
-      <Route path="/about" element={<WebsitePage />} />
-      <Route path="/about-divya" element={<WebsitePage />} />
-      <Route path="/services" element={<WebsitePage />} />
-      <Route path="/gallery" element={<WebsitePage />} />
-      <Route path="/book-consultation" element={<WebsitePage />} />
-      <Route
-        path="/admin/login"
-        element={<AdminLogin session={session} />}
-      />
-      <Route
-        path="/admin"
-        element={isAdminLoading ? (
-          <main className="grid min-h-screen place-items-center bg-[#F8FAFC] px-4 font-inter text-[#0F172A]">
-            <div className="text-center">
-              <LogoMark className="mx-auto h-16 w-16" />
-              <BrandWordmark className="mt-4 block" sizeClassName="text-3xl" />
-              <p className="mt-3 text-sm font-semibold text-slate-500">Loading admin...</p>
-            </div>
-          </main>
-        ) : !session ? (
-          <Navigate
-            to="/admin/login"
-            replace
-            state={adminAccessMessage ? { message: adminAccessMessage } : undefined}
+    <Suspense fallback={<BrandLoadingScreen />}>
+      <Routes>
+        <Route path="/" element={<WebsitePage />} />
+        <Route path="/home" element={<WebsitePage />} />
+        <Route path="/about" element={<WebsitePage />} />
+        <Route path="/about-divya" element={<WebsitePage />} />
+        <Route path="/services" element={<WebsitePage />} />
+        <Route path="/gallery" element={<WebsitePage />} />
+        <Route path="/book-consultation" element={<WebsitePage />} />
+        <Route path="/lactation-consultant-chennai" element={<LactationConsultantChennai />} />
+        <Route path="/low-milk-supply-help-chennai" element={<LowMilkSupplyHelpChennai />} />
+        <Route path="/tongue-tie-assessment-chennai" element={<TongueTieAssessmentChennai />} />
+        <Route path="/online-lactation-consultation-india" element={<OnlineLactationConsultation />} />
+        <Route path="/online-lactation-consultation-nri-mothers" element={<OnlineLactationConsultationNRI />} />
+        <Route path="/online-lactation-consultant-international" element={<OnlineLactationConsultationInternational />} />
+        {NEIGHBORHOODS.map((neighborhood) => (
+          <Route
+            key={neighborhood.slug}
+            path={`/lactation-consultant-${neighborhood.slug}-chennai`}
+            element={
+              <NeighborhoodPage
+                area={neighborhood.area}
+                areaSlug={neighborhood.slug}
+                nearbyAreas={neighborhood.nearbyAreas}
+                areaNote={neighborhood.areaNote}
+              />
+            }
           />
-        ) : !hasVerifiedAdminSession ? (
-          <Navigate
-            to="/admin/login"
-            replace
-            state={{ message: adminAccessMessage || "This account is not authorized for admin access." }}
-          />
-        ) : (
-          <AdminDashboard session={session} />
-        )}
-      />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        ))}
+        <Route
+          path="/admin/login"
+          element={<AdminLogin session={session} />}
+        />
+        <Route
+          path="/admin"
+          element={isAdminLoading ? (
+            <BrandLoadingScreen message="Loading admin..." />
+          ) : !session ? (
+            <Navigate
+              to="/admin/login"
+              replace
+              state={adminAccessMessage ? { message: adminAccessMessage } : undefined}
+            />
+          ) : !hasVerifiedAdminSession ? (
+            <Navigate
+              to="/admin/login"
+              replace
+              state={{ message: adminAccessMessage || "This account is not authorized for admin access." }}
+            />
+          ) : (
+            <AdminDashboard session={session} />
+          )}
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Suspense>
   )
 }
 
