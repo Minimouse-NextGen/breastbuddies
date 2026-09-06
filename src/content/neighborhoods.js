@@ -31,7 +31,7 @@ export const NEIGHBORHOODS = [
     area: "Anna Nagar",
     nearbyAreas: "Anna Nagar East, Kilpauk, and Aminjikarai",
     areaNote:
-      "Mothers in Anna Nagar trust us because we combine international-standard IBCLC training with an understanding of local feeding practices and cultural expectations.",
+      "Mothers in Anna Nagar can receive BreastBuddies support that combines confirmed lactation training with an understanding of local feeding practices and cultural expectations.",
   },
   {
     slug: "velachery",
@@ -52,6 +52,6 @@ export const NEIGHBORHOODS = [
     area: "Tambaram",
     nearbyAreas: "Chromepet, Perungalathur, and Mudichur",
     areaNote:
-      "Bringing expert breastfeeding support to south Chennai — mothers in Tambaram no longer need to travel to the city centre for IBCLC care.",
+      "Bringing breastfeeding support to south Chennai — families in Tambaram can ask BreastBuddies about online and in-person consultation options.",
   },
 ]

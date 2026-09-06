@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { FaqStructuredData } from "./StructuredData"
 
 const faqItems = [
   {
@@ -38,19 +39,6 @@ const faqItems = [
   },
 ]
 
-const faqSchema = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  mainEntity: faqItems.map((item) => ({
-    "@type": "Question",
-    name: item.question,
-    acceptedAnswer: {
-      "@type": "Answer",
-      text: item.answer,
-    },
-  })),
-}
-
 function FAQ() {
   const [openIndex, setOpenIndex] = useState(0)
 
@@ -59,10 +47,7 @@ function FAQ() {
       id="faq"
       className="bg-white px-4 py-8 sm:px-6 lg:px-8 lg:py-10"
     >
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-      />
+      <FaqStructuredData items={faqItems} path="/" />
 
       <div className="mx-auto w-full max-w-5xl">
         <div className="text-center">

@@ -1,110 +1,93 @@
-import { Helmet } from "react-helmet-async"
 import BookingForm from "../../components/BookingForm"
-import { FAQ, FaqSchema, SeoPageShell, ServiceLink } from "./SeoPageParts"
+import SeoHead from "../../components/SeoHead"
+import { FAQ, FaqSchema, SeoPageSchema, SeoPageShell, ServiceLink } from "./SeoPageParts"
+
+const PAGE_PATH = "/online-lactation-consultation-nri-mothers"
+const TITLE = "Online Lactation Consultant for NRI Mothers | BreastBuddies"
+const DESCRIPTION =
+  "Online lactation support for NRI and Indian mothers abroad, with culturally aware breastfeeding guidance from BreastBuddies."
 
 const FAQ_ITEMS = [
   {
-    question: "Can you actually help if I'm not in India?",
+    question: "Can you help if I am not in India?",
     answer:
-      "Yes — most breastfeeding challenges (latch, positioning, milk supply, pumping, weaning worries) can be thoroughly assessed and supported over video, wherever you're based. It's the same assessment approach we use in person, adapted for a screen.",
+      "Yes. Many breastfeeding challenges, including latch, positioning, pumping, and milk supply worries, can be discussed over video. If a concern needs hands-on care, BreastBuddies will guide you to seek local in-person support.",
   },
   {
-    question: "How do the time zones work for scheduling?",
+    question: "How do time zones work for scheduling?",
     answer:
-      "We schedule sessions to overlap with common evening or morning hours in the US, UK, Canada, and Australia relative to Indian Standard Time. Time zone differences are something we plan around, not a barrier to booking.",
+      "Time zone fit depends on availability. Share where you are based when you enquire, and BreastBuddies will confirm whether a suitable online consultation slot is available.",
   },
   {
-    question: "If my baby needs an in-person exam (like for tongue tie), what happens?",
+    question: "What if my baby needs an in-person exam?",
     answer:
-      "If we spot something that needs a hands-on exam, we'll tell you clearly and help you think through finding the right kind of local provider to see in person, while continuing to support you remotely for everything else.",
+      "If feeding signs suggest a hands-on exam may be needed, BreastBuddies will explain that clearly and help you think through the type of local provider to contact.",
   },
   {
-    question: "Do you understand things like confinement period practices and family expectations?",
+    question: "Do you understand Indian postpartum practices and family expectations?",
     answer:
-      "Yes. We're familiar with common Indian postpartum practices and the family dynamics that often come with them, and we work with what matters to you and your family rather than dismissing it as unnecessary.",
+      "Yes. BreastBuddies can discuss common Indian postpartum practices and family dynamics respectfully while helping you make informed feeding decisions.",
   },
 ]
 
 export default function OnlineLactationConsultationNRI() {
-  const title = "Online Lactation Consultant for NRI Mothers | BreastBuddies IBCLC"
-  const description =
-    "IBCLC-certified online lactation support for NRI and Indian mothers abroad in the USA, UK, Canada & Australia. Culturally aware breastfeeding help via video call."
-  const canonical = "https://www.breastbuddies.co.in/online-lactation-consultation-nri-mothers"
-
   return (
     <>
-      <Helmet>
-        <title>{title}</title>
-        <meta name="description" content={description} />
-        <link rel="canonical" href={canonical} />
-        <meta property="og:title" content={title} />
-        <meta property="og:description" content={description} />
-        <meta property="og:url" content={canonical} />
-        <meta property="og:type" content="website" />
-      </Helmet>
+      <SeoHead title={TITLE} description={DESCRIPTION} canonicalPath={PAGE_PATH} />
 
       <SeoPageShell>
+        <SeoPageSchema
+          path={PAGE_PATH}
+          name="Online Lactation Consultant for NRI Mothers"
+          description={DESCRIPTION}
+          serviceName="Online Lactation Support for NRI Mothers"
+          areaServed={{ "@type": "Place", name: "Online consultations for Indian families abroad" }}
+        />
+
         <section className="mb-12">
           <h1 className="mb-6 text-3xl font-bold leading-tight text-gray-900 sm:text-4xl">
-            Online Lactation Consultant for NRI Mothers —{" "}
+            Online Lactation Consultant for NRI Mothers -{" "}
             <span className="text-rose-700">Breastfeeding Support That Understands Your World</span>
           </h1>
 
+          <div className="mb-8 rounded-xl border border-sky-100 bg-sky-50 p-6">
+            <p className="font-semibold text-gray-900">How can online support help NRI mothers?</p>
+            <p className="mt-2 leading-relaxed text-gray-700">
+              Online support gives you a calm place to discuss breastfeeding questions, cultural
+              expectations, family advice, and practical feeding concerns when you are away from
+              familiar support systems.
+            </p>
+          </div>
+
           <p className="text-lg leading-relaxed text-gray-700">
-            Being a new mother away from home is hard enough. Add breastfeeding
-            struggles, a pediatrician unfamiliar with the postpartum practices
-            you grew up with, and family "helping" over video calls from
-            thousands of miles away, and it can feel isolating fast.
-            BreastBuddies provides IBCLC-certified online lactation
-            consultations built specifically for NRI and expat Indian mothers
-            in the USA, UK, Canada, Australia, and beyond — combining
-            international clinical standards with an understanding of the
-            cultural context you're navigating.
+            Being a new mother away from home can feel isolating. BreastBuddies offers online
+            lactation consultations for NRI and expat Indian mothers, combining practical feeding
+            support with respect for the cultural context many Indian families navigate after birth.
           </p>
         </section>
 
         <section className="mb-12">
           <h2 className="mb-4 text-2xl font-bold text-gray-900">Why NRI Mothers Choose BreastBuddies</h2>
           <p className="mb-4 leading-relaxed text-gray-700">
-            We understand Indian postpartum traditions — confinement period
-            practices, family involvement, foods believed to help supply —
-            without dismissing them as old-fashioned. If they matter to you or
-            your family, they're part of the conversation, not something we
-            talk you out of.
+            BreastBuddies can discuss common Indian postpartum traditions, family involvement, and
+            feeding expectations without dismissing what matters to you. The goal is to help you
+            make informed choices while keeping your family context in view.
           </p>
-          <p className="mb-4 leading-relaxed text-gray-700">
-            We also bridge the gap between what your Western pediatrician says
-            and what your family back home expects, so you're not stuck
-            translating between two systems of advice on your own. And because
-            we speak the same cultural language, you don't have to spend the
-            first ten minutes of every session explaining context.
-          </p>
-        </section>
-
-        <section className="mb-12">
-          <h2 className="mb-4 text-2xl font-bold text-gray-900">We Work Around Your Time Zone</h2>
           <p className="leading-relaxed text-gray-700">
-            Sessions are scheduled to overlap with common evening or morning
-            hours in the US, UK, Canada, and Australia relative to Indian
-            Standard Time. Whatever part of the world you're in, time zone is
-            never a reason not to book — tell us where you are and we'll find
-            a slot that works.
+            Online sessions can support latch and positioning questions, milk supply worries,
+            pumping routines, weaning questions, and decision-making about when local in-person
+            care is needed.
           </p>
         </section>
 
         <section className="mb-12">
-          <h2 className="mb-6 text-2xl font-bold text-gray-900">What We Help With</h2>
+          <h2 className="mb-6 text-2xl font-bold text-gray-900">Related Support</h2>
           <div className="grid gap-4 sm:grid-cols-2">
-            <ServiceLink title="Latch & Positioning Support" href="/lactation-consultant-chennai" />
-            <ServiceLink title="Low Milk Supply Guidance" href="/low-milk-supply-help-chennai" />
-            <ServiceLink title="Tongue Tie Guidance (with local specialist referral)" href="/tongue-tie-assessment-chennai" />
-            <ServiceLink title="Pumping & Return-to-Work Planning" href="/online-lactation-consultant-international" />
+            <ServiceLink title="Latch and positioning support" href="/lactation-consultant-chennai" />
+            <ServiceLink title="Low milk supply guidance" href="/low-milk-supply-help-chennai" />
+            <ServiceLink title="Tongue tie feeding questions" href="/tongue-tie-assessment-chennai" />
+            <ServiceLink title="International online lactation consultation" href="/online-lactation-consultant-international" />
           </div>
-          <p className="mt-4 text-gray-700">
-            When family and community support isn't nearby, having someone who
-            understands both the clinical side and the cultural side makes a
-            real difference — that's what we aim to be for you.
-          </p>
         </section>
 
         <section className="mb-12">
@@ -120,8 +103,8 @@ export default function OnlineLactationConsultationNRI() {
           <div className="mb-6 rounded-xl border border-rose-200 bg-rose-50 p-6 text-center">
             <h2 className="mb-2 text-2xl font-bold text-gray-900">Book Your Online Consultation</h2>
             <p className="mx-auto mb-4 max-w-xl text-gray-700">
-              Fill in the form below and we'll get back to you on WhatsApp, or
-              message us directly if that's easier from where you are.
+              Fill in the form below and BreastBuddies will get back to you on WhatsApp, or message
+              directly if that is easier from where you are.
             </p>
             <div className="flex flex-col justify-center gap-3 sm:flex-row">
               <a
@@ -144,7 +127,7 @@ export default function OnlineLactationConsultationNRI() {
         </section>
       </SeoPageShell>
 
-      <FaqSchema items={FAQ_ITEMS} />
+      <FaqSchema items={FAQ_ITEMS} path={PAGE_PATH} />
     </>
   )
 }

@@ -1,78 +1,87 @@
-import { Helmet } from "react-helmet-async"
+import SeoHead from "../../components/SeoHead"
 import {
   BottomCta,
   CallToActionBar,
   FAQ,
   FaqSchema,
+  SeoPageSchema,
   SeoPageShell,
   ServiceLink,
 } from "./SeoPageParts"
+
+const PAGE_PATH = "/low-milk-supply-help-chennai"
+const TITLE = "Low Milk Supply Help in Chennai | BreastBuddies"
+const DESCRIPTION =
+  "Worried about low milk supply? BreastBuddies offers lactation assessment and a personalized feeding plan for Chennai families and online clients."
 
 const FAQ_ITEMS = [
   {
     question: "How do I know if I actually have low milk supply?",
     answer:
-      "Many mothers worry about low supply based on signs that are actually normal — softer breasts, shorter feeds, or a baby cluster feeding. A proper assessment looks at your baby's weight gain, wet and dirty diapers, and feeding behavior before assuming supply is the issue.",
+      "Many mothers worry about low supply based on signs that can also be normal, such as softer breasts, shorter feeds, or cluster feeding. A proper assessment looks at baby's weight gain, wet and dirty diapers, and feeding behavior before assuming supply is the issue.",
   },
   {
-    question: "Can low milk supply be fixed?",
+    question: "Can low milk supply be improved?",
     answer:
-      "In most cases, yes. Supply usually responds well to correcting the latch, adjusting feeding frequency, and addressing any underlying cause. We build a plan specific to your situation rather than a one-size-fits-all fix.",
+      "Many supply concerns improve when latch, feeding frequency, milk transfer, and pumping routines are addressed. The right plan depends on the cause, so BreastBuddies starts with an assessment rather than a one-size-fits-all fix.",
   },
   {
-    question: "Do I need to take supplements or medication to increase supply?",
+    question: "Do I need supplements or medication to increase supply?",
     answer:
-      "Not always. We start with feeding-based techniques first, since they address the root cause. Supplements or medication are only discussed when appropriate, and always alongside — not instead of — a proper feeding assessment.",
+      "Not always. Feeding-based techniques are usually reviewed first. Supplements or medication should be discussed only when appropriate and alongside a proper feeding assessment.",
   },
   {
-    question: "How soon will I see a difference?",
+    question: "When should I seek support for low milk supply worries?",
     answer:
-      "Many mothers notice a change within a few days of adjusting feeding technique and frequency. Milk supply responds gradually, so we typically follow up within a week to track progress and adjust the plan.",
+      "Seek support if your baby has poor weight gain, fewer wet or dirty diapers than expected, ongoing feeding distress, painful latch, or if you feel unsure about how feeding is going.",
   },
 ]
 
 export default function LowMilkSupplyHelpChennai() {
-  const title = "Low Milk Supply Help in Chennai | BreastBuddies IBCLC"
-  const description =
-    "Worried about low milk supply? IBCLC-certified assessment and a personalized plan to help you build and protect your supply. Serving Chennai and online."
-  const canonical = "https://www.breastbuddies.co.in/low-milk-supply-help-chennai"
-
   return (
     <>
-      <Helmet>
-        <title>{title}</title>
-        <meta name="description" content={description} />
-        <link rel="canonical" href={canonical} />
-        <meta property="og:title" content={title} />
-        <meta property="og:description" content={description} />
-        <meta property="og:url" content={canonical} />
-        <meta property="og:type" content="website" />
-      </Helmet>
+      <SeoHead title={TITLE} description={DESCRIPTION} canonicalPath={PAGE_PATH} />
 
       <SeoPageShell>
+        <SeoPageSchema
+          path={PAGE_PATH}
+          name="Low Milk Supply Help in Chennai"
+          description={DESCRIPTION}
+          serviceName="Low Milk Supply Lactation Support"
+          areaServed={{ "@type": "City", name: "Chennai" }}
+        />
+
         <section className="mb-12">
           <h1 className="mb-6 text-3xl font-bold leading-tight text-gray-900 sm:text-4xl">
-            Low Milk Supply Help in Chennai —{" "}
+            Low Milk Supply Help in Chennai -{" "}
             <span className="text-rose-700">A Plan Built Around Your Baby</span>
           </h1>
 
+          <div className="mb-8 rounded-xl border border-sky-100 bg-sky-50 p-6">
+            <p className="font-semibold text-gray-900">What can cause low milk supply concerns?</p>
+            <p className="mt-2 leading-relaxed text-gray-700">
+              Milk supply concerns can come from latch difficulties, feeding frequency, milk
+              transfer, pumping routines, parent health history, or normal changes that only feel
+              like low supply. A proper assessment looks at the full feeding picture before making
+              a plan.
+            </p>
+          </div>
+
           <p className="mb-4 text-lg leading-relaxed text-gray-700">
-            "Am I making enough milk?" is one of the most common worries new
-            mothers bring to us — and it's often more complicated than it looks.
-            Sometimes supply genuinely needs support. Just as often, supply is
-            fine and something else, like a shallow latch, is making feeding
-            feel harder than it should.
+            "Am I making enough milk?" is one of the most common worries new mothers bring to us.
+            Sometimes supply genuinely needs support. Just as often, supply is fine and something
+            else, like a shallow latch, is making feeding feel harder than it should.
           </p>
 
           <p className="mb-8 text-lg leading-relaxed text-gray-700">
-            BreastBuddies offers a thorough, judgment-free assessment before
-            recommending anything — so you're not guessing with supplements,
-            teas, or gadgets that may not address the actual cause.
+            BreastBuddies offers a thorough, judgment-free assessment before recommending a plan,
+            so families are not left guessing with supplements, teas, or gadgets that may not
+            address the actual cause.
           </p>
 
           <CallToActionBar
             heading="Concerned about your milk supply? Get an honest assessment."
-            subheading="Call now or WhatsApp for same-day guidance"
+            subheading="Call or WhatsApp to check consultation availability"
           />
         </section>
 
@@ -82,30 +91,24 @@ export default function LowMilkSupplyHelpChennai() {
           </h2>
 
           <p className="mb-4 leading-relaxed text-gray-700">
-            Before recommending anything, we look at the full picture: your
-            baby's weight trend, feeding frequency and duration, latch quality,
-            and any history that could affect supply (delivery type, delayed
-            first feed, previous breast surgery, hormonal factors). Perceived
-            low supply — where supply is actually adequate — is common, and
-            ruling that out first prevents unnecessary stress and unneeded
-            supplementation.
+            Before recommending anything, we look at the full picture: baby's weight trend, feeding
+            frequency and duration, latch quality, and any history that could affect supply, such
+            as delivery type, delayed first feed, previous breast surgery, or hormonal factors.
           </p>
 
           <p className="leading-relaxed text-gray-700">
-            When supply does need building, we prioritize feeding-based
-            techniques — latch correction, paced and responsive feeding,
-            recommended pump routines — since they address the root cause
-            rather than masking the symptom.
+            When supply does need building, BreastBuddies focuses on practical next steps such as
+            latch correction, responsive feeding, and pump routines that fit the family.
           </p>
         </section>
 
         <section className="mb-12">
           <h2 className="mb-6 text-2xl font-bold text-gray-900">Related Support</h2>
           <div className="grid gap-4 sm:grid-cols-2">
-            <ServiceLink title="Full Lactation Consultation in Chennai" href="/lactation-consultant-chennai" />
-            <ServiceLink title="Tongue Tie Assessment" href="/tongue-tie-assessment-chennai" />
-            <ServiceLink title="Online Consultation (Anywhere in India)" href="/online-lactation-consultation-india" />
-            <ServiceLink title="Book a Consultation" href="/book-consultation" />
+            <ServiceLink title="Full lactation consultation in Chennai" href="/lactation-consultant-chennai" />
+            <ServiceLink title="Tongue tie feeding support" href="/tongue-tie-assessment-chennai" />
+            <ServiceLink title="Online lactation consultation in India" href="/online-lactation-consultation-india" />
+            <ServiceLink title="Request a lactation consultation" href="/book-consultation" />
           </div>
         </section>
 
@@ -120,11 +123,11 @@ export default function LowMilkSupplyHelpChennai() {
 
         <BottomCta
           heading="Let's Find Out What's Really Going On"
-          description="Get a clear, judgment-free answer on your milk supply — and a plan that actually fits your baby."
+          description="Get a clear, judgment-free look at your milk supply concern and a plan that fits your baby."
         />
       </SeoPageShell>
 
-      <FaqSchema items={FAQ_ITEMS} />
+      <FaqSchema items={FAQ_ITEMS} path={PAGE_PATH} />
     </>
   )
 }

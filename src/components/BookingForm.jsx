@@ -68,18 +68,6 @@ function BookingForm() {
 
     if (!validateForm()) return
 
-    const consultationRequest = {
-      fullName: formData.fullName.trim(),
-      mobileNumber: formData.mobileNumber.trim(),
-      email: formData.email.trim(),
-      babyAgeOrPregnancyWeek: formData.babyAgeOrPregnancyWeek.trim(),
-      primaryConcern: formData.primaryConcern.trim(),
-      consultationMode: formData.consultationMode,
-    }
-
-    // TODO: Connect this form submission to EmailJS.
-    console.log("Consultation request ready for submission", consultationRequest)
-
     setIsSubmitted(true)
     setFormData(initialFormData)
   }

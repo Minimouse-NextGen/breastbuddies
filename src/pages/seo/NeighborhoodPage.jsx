@@ -1,96 +1,88 @@
-import { Helmet } from "react-helmet-async"
+import SeoHead from "../../components/SeoHead"
 import {
   BottomCta,
   CallToActionBar,
   FAQ,
   FaqSchema,
+  SeoPageSchema,
   SeoPageShell,
   ServiceLink,
 } from "./SeoPageParts"
 
-// Reusable landing page shell for /lactation-consultant-{slug}-chennai routes.
-// One component driven by src/content/neighborhoods.js instead of a hand-copied
-// file per area, so the six (and any future) neighborhood pages stay in sync.
 export default function NeighborhoodPage({ area, areaSlug, nearbyAreas, areaNote }) {
+  const pagePath = `/lactation-consultant-${areaSlug}-chennai`
   const title = `Lactation Consultant in ${area} Chennai | BreastBuddies`
-  const description = `IBCLC-certified lactation consultant serving ${area}, Chennai. Expert breastfeeding support, latch help & tongue tie assessment. Same-day appointments available.`
-  const canonical = `https://www.breastbuddies.co.in/lactation-consultant-${areaSlug}-chennai`
+  const description = `BreastBuddies offers lactation and breastfeeding support for families in ${area}, Chennai, with online consultation options when appropriate.`
 
   const faqItems = [
     {
-      question: `How quickly can I get an appointment in ${area}?`,
-      answer: `We offer same-day and next-day appointments for urgent breastfeeding concerns in ${area} and surrounding areas. Call us to check today's availability.`,
+      question: `Can BreastBuddies support families in ${area}?`,
+      answer: `BreastBuddies states support for families in ${area} and nearby Chennai neighborhoods including ${nearbyAreas}. Please call or WhatsApp to confirm current in-person or online availability.`,
     },
     {
-      question: `Do you do home visits in ${area}?`,
-      answer: `Yes, we provide home visit consultations in ${area} and nearby neighborhoods. Home visits are ideal for mothers recovering from C-sections or with newborns.`,
+      question: `Are home visits available in ${area}?`,
+      answer: `Home visit availability in ${area} needs business confirmation for each enquiry. BreastBuddies can confirm whether in-person or online support is the right fit when you contact us.`,
     },
     {
-      question: "What's the cost of a lactation consultation?",
+      question: "What breastfeeding concerns can be discussed?",
       answer:
-        "Contact us for current consultation fees. One professional session often saves weeks of trial and error — and is more effective than every gadget and supplement combined.",
+        "Families commonly ask about latch, nipple pain, low milk supply worries, pumping, newborn feeding, and tongue tie feeding concerns.",
     },
   ]
 
   return (
     <>
-      <Helmet>
-        <title>{title}</title>
-        <meta name="description" content={description} />
-        <link rel="canonical" href={canonical} />
-        <meta property="og:title" content={title} />
-        <meta property="og:description" content={description} />
-        <meta property="og:url" content={canonical} />
-        <meta property="og:type" content="website" />
-      </Helmet>
+      <SeoHead
+        title={title}
+        description={description}
+        canonicalPath={pagePath}
+        robots="noindex,follow"
+      />
 
       <SeoPageShell>
+        <SeoPageSchema
+          path={pagePath}
+          name={`Lactation Consultant in ${area}, Chennai`}
+          description={description}
+          serviceName="Lactation Consultation"
+          areaServed={{ "@type": "City", name: "Chennai" }}
+        />
+
         <section className="mb-12">
           <h1 className="mb-6 text-3xl font-bold leading-tight text-gray-900 sm:text-4xl">
-            Lactation Consultant in {area}, Chennai —{" "}
+            Lactation Consultant in {area}, Chennai -{" "}
             <span className="text-rose-700">Breastfeeding Support Near You</span>
           </h1>
 
           <p className="mb-4 text-lg leading-relaxed text-gray-700">
-            Looking for a lactation consultant in {area}, Chennai? BreastBuddies
-            provides IBCLC-certified breastfeeding support to new mothers in{" "}
-            {area} and surrounding neighborhoods including {nearbyAreas}. Whether
-            you're dealing with latch pain, low milk supply, tongue tie
-            concerns, or just need expert guidance from someone who's helped
-            hundreds of Chennai mothers — we're close by.
+            Looking for breastfeeding support in {area}, Chennai? BreastBuddies supports families
+            with latch concerns, low milk supply worries, newborn feeding questions, and tongue tie
+            feeding concerns.
           </p>
 
           <p className="mb-8 text-lg leading-relaxed text-gray-700">{areaNote}</p>
 
           <CallToActionBar
-            heading={`Same-day appointments available in ${area}`}
-            subheading="Call now or WhatsApp to book"
+            heading={`Need lactation support in ${area}?`}
+            subheading="Call or WhatsApp to confirm current consultation availability"
           />
         </section>
 
         <section className="mb-12">
           <h2 className="mb-6 text-2xl font-bold text-gray-900">
-            Services Available in {area}
+            Support Available for {area} Families
           </h2>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <ServiceLink title="Latch Assessment & Correction" href="/lactation-consultant-chennai" />
-            <ServiceLink title="Low Milk Supply Management" href="/low-milk-supply-help-chennai" />
-            <ServiceLink title="Tongue Tie Assessment" href="/tongue-tie-assessment-chennai" />
-            <ServiceLink title="Nipple Pain & Damage Treatment" href="/lactation-consultant-chennai" />
-            <ServiceLink title="Return-to-Work Pumping Plans" href="/lactation-consultant-chennai" />
-            <ServiceLink title="Online Consultation" href="/online-lactation-consultation-india" />
+            <ServiceLink title="Latch assessment and positioning" href="/lactation-consultant-chennai" />
+            <ServiceLink title="Low milk supply help" href="/low-milk-supply-help-chennai" />
+            <ServiceLink title="Tongue tie feeding support" href="/tongue-tie-assessment-chennai" />
+            <ServiceLink title="Online lactation consultation" href="/online-lactation-consultation-india" />
           </div>
 
           <p className="mt-4 text-gray-600">
-            Can't travel? We also offer{" "}
-            <a
-              href="/online-lactation-consultation-india"
-              className="text-rose-700 underline hover:text-rose-900"
-            >
-              online video consultations
-            </a>{" "}
-            — get the same thorough assessment without leaving {area}.
+            These neighborhood pages are being reviewed for consolidation into a stronger Chennai
+            service-area experience.
           </p>
         </section>
 
@@ -105,11 +97,11 @@ export default function NeighborhoodPage({ area, areaSlug, nearbyAreas, areaNote
 
         <BottomCta
           heading={`Get Breastfeeding Help in ${area}`}
-          description={`Breastfeeding doesn't have to be a struggle. Call BreastBuddies for same-day support in ${area}, Chennai.`}
+          description={`Call or WhatsApp BreastBuddies to confirm support options for ${area}, Chennai.`}
         />
       </SeoPageShell>
 
-      <FaqSchema items={faqItems} />
+      <FaqSchema items={faqItems} path={pagePath} />
     </>
   )
 }

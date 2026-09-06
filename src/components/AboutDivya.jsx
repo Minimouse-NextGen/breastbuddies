@@ -115,13 +115,22 @@ function AboutDivya() {
               </p>
             </div>
 
-            <a
-              href="/#booking"
-              onClick={(event) => scrollToSection(event, "booking")}
-              className="bb-button bb-button-secondary mt-7"
-            >
-              Know more
-            </a>
+            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+              <a
+                href="/#services"
+                onClick={(event) => scrollToSection(event, "services")}
+                className="bb-button bb-button-secondary"
+              >
+                Explore Breastfeeding Support
+              </a>
+              <a
+                href="/#booking"
+                onClick={(event) => scrollToSection(event, "booking")}
+                className="bb-button bb-button-primary"
+              >
+                Request a Consultation
+              </a>
+            </div>
           </div>
         </div>
 

@@ -1,108 +1,91 @@
-import { Helmet } from "react-helmet-async"
 import BookingForm from "../../components/BookingForm"
-import { FAQ, FaqSchema, SeoPageShell, ServiceLink } from "./SeoPageParts"
+import SeoHead from "../../components/SeoHead"
+import { FAQ, FaqSchema, SeoPageSchema, SeoPageShell, ServiceLink } from "./SeoPageParts"
+
+const PAGE_PATH = "/online-lactation-consultant-international"
+const TITLE = "Online Lactation Consultant | International Breastfeeding Support"
+const DESCRIPTION =
+  "Online lactation consultation from BreastBuddies for families outside India who need breastfeeding, pumping, latch, or feeding guidance by video call."
 
 const FAQ_ITEMS = [
   {
-    question: "Is an IBCLC credential recognized internationally?",
+    question: "What credential is confirmed for Divya Umashankar?",
     answer:
-      "Yes. IBCLC (International Board Certified Lactation Consultant) is awarded by the International Board of Lactation Consultant Examiners and is recognized as the gold-standard lactation credential worldwide — it isn't tied to any one country's healthcare system.",
+      "Divya Umashankar is confirmed as an Advanced Certified Lactation Professional (ACLP), with infant and young child feeding and maternal-child nutrition specializations.",
   },
   {
     question: "Do you work with mothers outside India?",
     answer:
-      "Yes, we consult with mothers anywhere in the world by video call, with sessions scheduled around your time zone rather than ours.",
+      "Yes. BreastBuddies can consult with families outside India by video call when the concern is suitable for online lactation support.",
   },
   {
     question: "What if I need in-person care for something like tongue tie?",
     answer:
-      "We'll say so clearly and help you think through finding the right kind of local provider to examine your baby in person, while continuing to support you remotely for everything else.",
+      "BreastBuddies will explain when a hands-on exam may be needed and guide you to seek an appropriate local medical or dental professional.",
   },
   {
     question: "What do I need for the video call?",
     answer:
-      "A phone or laptop with a camera and a stable internet connection. We'll guide you on positioning so we can observe a full feed clearly, just like an in-person visit.",
+      "A phone or laptop with a working camera and a stable internet connection is usually enough. You may also want a quiet feeding space and any pump or feeding tools you use regularly.",
   },
 ]
 
 export default function OnlineLactationConsultationInternational() {
-  const title = "Online Lactation Consultant | International IBCLC Breastfeeding Support"
-  const description =
-    "IBCLC-certified online lactation consultations for mothers anywhere in the world. Evidence-based, judgment-free breastfeeding support via video call."
-  const canonical = "https://www.breastbuddies.co.in/online-lactation-consultant-international"
-
   return (
     <>
-      <Helmet>
-        <title>{title}</title>
-        <meta name="description" content={description} />
-        <link rel="canonical" href={canonical} />
-        <meta property="og:title" content={title} />
-        <meta property="og:description" content={description} />
-        <meta property="og:url" content={canonical} />
-        <meta property="og:type" content="website" />
-      </Helmet>
+      <SeoHead title={TITLE} description={DESCRIPTION} canonicalPath={PAGE_PATH} />
 
       <SeoPageShell>
+        <SeoPageSchema
+          path={PAGE_PATH}
+          name="Online Lactation Consultant"
+          description={DESCRIPTION}
+          serviceName="International Online Lactation Consultation"
+          areaServed={{ "@type": "Place", name: "Online consultations worldwide" }}
+        />
+
         <section className="mb-12">
           <h1 className="mb-6 text-3xl font-bold leading-tight text-gray-900 sm:text-4xl">
-            Online Lactation Consultant —{" "}
-            <span className="text-rose-700">IBCLC Breastfeeding Support, Wherever You Are</span>
+            Online Lactation Consultant -{" "}
+            <span className="text-rose-700">Breastfeeding Support Wherever You Are</span>
           </h1>
 
+          <div className="mb-8 rounded-xl border border-sky-100 bg-sky-50 p-6">
+            <p className="font-semibold text-gray-900">Can lactation support work internationally?</p>
+            <p className="mt-2 leading-relaxed text-gray-700">
+              Many breastfeeding, pumping, positioning, and feeding-routine questions can be
+              supported over video. When a concern requires hands-on care, BreastBuddies will help
+              you identify the type of local support to seek.
+            </p>
+          </div>
+
           <p className="text-lg leading-relaxed text-gray-700">
-            Breastfeeding challenges don't respect borders, and neither does
-            good lactation support. BreastBuddies offers IBCLC-certified online
-            consultations to mothers anywhere in the world — the same
-            internationally recognized clinical credential you'd look for from
-            a consultant in your own country, delivered over video call, on
-            your schedule.
+            Breastfeeding challenges do not always wait for local appointments. BreastBuddies offers
+            online consultations to families outside India when video-based lactation support is a
+            good fit.
           </p>
         </section>
 
         <section className="mb-12">
-          <h2 className="mb-4 text-2xl font-bold text-gray-900">Why Choose an Online IBCLC Consultation</h2>
+          <h2 className="mb-4 text-2xl font-bold text-gray-900">Why Choose Online Lactation Support</h2>
           <p className="mb-4 leading-relaxed text-gray-700">
-            IBCLC is a globally recognized credential from the International
-            Board of Lactation Consultant Examiners, not a location-specific
-            qualification — so the clinical quality of your consultation
-            doesn't depend on where you happen to live.
+            Online care can be especially helpful when you need timely guidance, are recovering at
+            home, are exclusively pumping, or want a structured discussion about latch, supply, or
+            feeding routines.
           </p>
-          <p className="mb-4 leading-relaxed text-gray-700">
-            Sessions are unhurried and one-on-one, without the time pressure of
-            a rushed in-person appointment squeezed between other patients.
-            And a full visual assessment of latch and positioning works well
-            over video — we can see what we need to see just as clearly as we
-            would in person.
+          <p className="leading-relaxed text-gray-700">
+            BreastBuddies keeps the scope of online support clear. If your baby or your situation
+            needs a hands-on assessment, that recommendation is part of the plan.
           </p>
         </section>
 
         <section className="mb-12">
           <h2 className="mb-6 text-2xl font-bold text-gray-900">What We Help With</h2>
           <div className="grid gap-4 sm:grid-cols-2">
-            <ServiceLink title="Latch Assessment" href="/lactation-consultant-chennai" />
-            <ServiceLink title="Milk Supply Evaluation" href="/low-milk-supply-help-chennai" />
-            <ServiceLink title="Pumping & Return-to-Work Planning" href="/online-lactation-consultation-nri-mothers" />
-            <ServiceLink title="General Feeding Troubleshooting" href="/lactation-consultant-chennai" />
-          </div>
-        </section>
-
-        <section className="mb-12">
-          <h2 className="mb-6 text-2xl font-bold text-gray-900">How It Works</h2>
-          <div className="space-y-4">
-            {[
-              "Book a session at a time that works for you, wherever you are",
-              "Join by video call from a phone or laptop — no special equipment needed",
-              "Get a full assessment of feeding, latch, and positioning, just as you would in person",
-              "Receive a written follow-up plan, with optional follow-up message support after the session",
-            ].map((step, i) => (
-              <div key={step} className="flex items-start gap-4">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-rose-100 text-sm font-semibold text-rose-700">
-                  {i + 1}
-                </span>
-                <p className="pt-1 text-gray-700">{step}</p>
-              </div>
-            ))}
+            <ServiceLink title="Latch assessment and positioning" href="/lactation-consultant-chennai" />
+            <ServiceLink title="Milk supply evaluation" href="/low-milk-supply-help-chennai" />
+            <ServiceLink title="NRI and expat mother support" href="/online-lactation-consultation-nri-mothers" />
+            <ServiceLink title="Request a consultation" href="/book-consultation" />
           </div>
         </section>
 
@@ -119,8 +102,8 @@ export default function OnlineLactationConsultationInternational() {
           <div className="mb-6 rounded-xl border border-rose-200 bg-rose-50 p-6 text-center">
             <h2 className="mb-2 text-2xl font-bold text-gray-900">Book Your Consultation</h2>
             <p className="mx-auto mb-4 max-w-xl text-gray-700">
-              Fill in the form below and we'll get back to you on WhatsApp, or
-              message us directly to start the conversation.
+              Fill in the form below and BreastBuddies will get back to you on WhatsApp, or message
+              directly to start the conversation.
             </p>
             <div className="flex flex-col justify-center gap-3 sm:flex-row">
               <a
@@ -143,7 +126,7 @@ export default function OnlineLactationConsultationInternational() {
         </section>
       </SeoPageShell>
 
-      <FaqSchema items={FAQ_ITEMS} />
+      <FaqSchema items={FAQ_ITEMS} path={PAGE_PATH} />
     </>
   )
 }

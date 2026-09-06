@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { Navigate, useLocation, useNavigate } from "react-router-dom"
 import { BrandTagline, BrandWordmark, LogoMark, SmallIcon } from "../components/Graphics"
+import SeoHead from "../components/SeoHead"
 import { isAllowedAdminEmail, verifyAdminAccess } from "../services/adminAccess"
 import { isSupabaseConfigured, supabase, supabaseConfigError } from "../services/supabaseClient"
 
@@ -61,7 +62,14 @@ function AdminLogin({ session }) {
   }
 
   return (
-    <main className="relative min-h-screen w-screen overflow-hidden bg-[#F8FAFC] font-inter text-[#0F172A]">
+    <>
+      <SeoHead
+        title="Admin Login | BreastBuddies"
+        description="BreastBuddies admin login."
+        canonicalPath="/admin/login"
+        robots="noindex,nofollow"
+      />
+      <main className="relative min-h-screen w-screen overflow-hidden bg-[#F8FAFC] font-inter text-[#0F172A]">
       <div
         className="absolute inset-0"
         aria-hidden="true"
@@ -370,7 +378,8 @@ function AdminLogin({ session }) {
           </div>
         </section>
       </div>
-    </main>
+      </main>
+    </>
   )
 }
 

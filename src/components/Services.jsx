@@ -20,6 +20,7 @@ const services = [
       "Family breastfeeding education",
       "Building feeding confidence",
     ],
+    link: "/book-consultation",
   },
   {
     title: "Postpartum Breastfeeding Support",
@@ -38,6 +39,7 @@ const services = [
       "Newborn feeding support for early challenges",
       "Breastfeeding confidence & reassurance",
     ],
+    link: "/low-milk-supply-help-chennai",
   },
   {
     title: "Specialized Lactation Support",
@@ -57,6 +59,7 @@ const services = [
       "Adoption & surrogacy feeding support",
       "Inclusive feeding support",
     ],
+    link: "/tongue-tie-assessment-chennai",
   },
 ]
 
@@ -84,8 +87,9 @@ function Services() {
 
         <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:mt-10 lg:grid-cols-3 lg:gap-8">
           {services.map((service) => (
-            <article
+            <a
               key={service.title}
+              href={service.link}
               className={`flex h-full min-w-0 flex-col justify-between rounded-3xl border ${service.border} ${service.background} p-5 shadow-md shadow-sky-900/5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl sm:p-7 lg:min-h-[500px] lg:p-8`}
             >
               <div>
@@ -126,7 +130,7 @@ function Services() {
                   ))}
                 </ul>
               </div>
-            </article>
+            </a>
           ))}
         </div>
       </div>

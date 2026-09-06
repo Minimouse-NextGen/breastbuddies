@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import { Navigate, useNavigate } from "react-router-dom"
+import SeoHead from "../components/SeoHead"
 import {
   createBlockedSlot,
   getAdminBlockedSlots,
@@ -1308,7 +1309,14 @@ function AdminDashboard({ session }) {
   }
 
   return (
-    <div className="flex h-[100dvh] w-[100vw] overflow-hidden bg-[#F8FAFC] font-inter text-[#0F172A] [box-sizing:border-box]">
+    <>
+      <SeoHead
+        title="Admin | BreastBuddies"
+        description="BreastBuddies admin area."
+        canonicalPath="/admin"
+        robots="noindex,nofollow"
+      />
+      <div className="flex h-[100dvh] w-[100vw] overflow-hidden bg-[#F8FAFC] font-inter text-[#0F172A] [box-sizing:border-box]">
       <div className="lg:hidden">
         <div className="sticky top-0 z-40 flex items-center justify-between border-b border-[#E2E8F0] bg-white px-4 py-4">
           <div className="font-playfair text-[24px] font-bold leading-none">
@@ -1418,7 +1426,8 @@ function AdminDashboard({ session }) {
           </section>
         </div>
       ) : null}
-    </div>
+      </div>
+    </>
   )
 }
 

@@ -1,121 +1,130 @@
-import { Helmet } from "react-helmet-async"
+import SeoHead from "../../components/SeoHead"
+import {
+  BottomCta,
+  FAQ,
+  FaqSchema,
+  SeoPageSchema,
+  SeoPageShell,
+  ServiceLink,
+} from "./SeoPageParts"
+
+const PAGE_PATH = "/online-lactation-consultation-india"
+const TITLE = "Online Lactation Consultation India | BreastBuddies"
+const DESCRIPTION =
+  "Book online lactation consultation with BreastBuddies for breastfeeding support, latch questions, milk supply concerns, and feeding guidance across India."
+
+const FAQ_ITEMS = [
+  {
+    question: "Is an online lactation consultation useful?",
+    answer:
+      "Online lactation support can be useful for many latch, positioning, milk supply, pumping, and feeding-routine questions. If a hands-on assessment is needed, BreastBuddies will explain that and guide you toward in-person care.",
+  },
+  {
+    question: "What do I need for the session?",
+    answer:
+      "You need a phone or laptop with a working camera, a stable internet connection, a quiet space, and your baby ready for a feed if feeding observation is part of the session.",
+  },
+  {
+    question: "How does an online consultation work?",
+    answer:
+      "You share your concern, join by video call, feed or position your baby as guided where appropriate, and receive practical next steps for your feeding situation.",
+  },
+  {
+    question: "Can you help if I am exclusively pumping?",
+    answer:
+      "Yes. BreastBuddies can help with pumping routines, flange-fit questions, milk expression habits, and planning feeds around your family schedule.",
+  },
+]
 
 export default function OnlineLactationConsultation() {
   return (
     <>
-      <Helmet>
-        <title>Online Lactation Consultation India | BreastBuddies IBCLC</title>
-        <meta
-          name="description"
-          content="Book an online lactation consultation with an IBCLC-certified consultant. Expert breastfeeding support via video call, anywhere in India."
-        />
-        <link
-          rel="canonical"
-          href="https://www.breastbuddies.co.in/online-lactation-consultation-india"
-        />
-        <meta
-          property="og:title"
-          content="Online Lactation Consultation India | BreastBuddies IBCLC"
-        />
-        <meta
-          property="og:description"
-          content="Book an online lactation consultation with an IBCLC-certified consultant. Expert breastfeeding support via video call, anywhere in India."
-        />
-        <meta
-          property="og:url"
-          content="https://www.breastbuddies.co.in/online-lactation-consultation-india"
-        />
-      </Helmet>
+      <SeoHead title={TITLE} description={DESCRIPTION} canonicalPath={PAGE_PATH} />
 
-      <main className="max-w-4xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
+      <SeoPageShell>
+        <SeoPageSchema
+          path={PAGE_PATH}
+          name="Online Lactation Consultation India"
+          description={DESCRIPTION}
+          serviceName="Online Lactation Consultation"
+          areaServed={{ "@type": "Country", name: "India" }}
+        />
+
         <section className="mb-12">
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6 leading-tight">
-            Online Lactation Consultation —{" "}
-            <span className="text-rose-700">IBCLC Breastfeeding Support Across India</span>
+          <h1 className="mb-6 text-3xl font-bold leading-tight text-gray-900 sm:text-4xl">
+            Online Lactation Consultation -{" "}
+            <span className="text-rose-700">Breastfeeding Support Across India</span>
           </h1>
-          <p className="text-lg text-gray-700 leading-relaxed mb-4">You don't need to be in Chennai to get expert breastfeeding help. BreastBuddies' online lactation consultations bring IBCLC-certified support to your home — whether you're in Mumbai, Bangalore, Delhi, Hyderabad, or a small town where lactation consultants simply don't exist.</p>
-          <p className="text-lg text-gray-700 leading-relaxed mb-8">All you need is a phone or laptop with a camera. We observe a full feed over video, assess your baby's latch and positioning, check for <a href="/tongue-tie-assessment-chennai" className="text-rose-700 underline hover:text-rose-900">tongue tie indicators</a>, and build a personalized plan.</p>
-          <div className="bg-rose-50 border border-rose-200 rounded-xl p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-            <div className="flex-1">
-              <p className="font-semibold text-gray-900">Expert breastfeeding support from the comfort of your home</p>
-              <p className="text-gray-600 text-sm mt-1">Video consultations available 7 days a week</p>
-            </div>
-            <a href="https://wa.me/917338890927" className="inline-flex items-center px-6 py-3 bg-rose-700 text-white font-semibold rounded-lg hover:bg-rose-800 transition-colors">Book on WhatsApp</a>
+
+          <div className="mb-8 rounded-xl border border-sky-100 bg-sky-50 p-6">
+            <p className="font-semibold text-gray-900">How does an online consultation work?</p>
+            <p className="mt-2 leading-relaxed text-gray-700">
+              You join a video call from home, share your feeding concern, and receive guidance on
+              latch, positioning, milk supply, pumping, or next steps. If your situation needs a
+              hands-on exam, BreastBuddies will say so clearly.
+            </p>
+          </div>
+
+          <p className="mb-4 text-lg leading-relaxed text-gray-700">
+            You do not need to be in Chennai to get lactation support. BreastBuddies offers online
+            consultations for families across India, including parents who do not have easy access
+            to local breastfeeding support.
+          </p>
+          <p className="mb-8 text-lg leading-relaxed text-gray-700">
+            During a video consultation, we can discuss feeding history, observe positioning when
+            appropriate, talk through{" "}
+            <a href="/tongue-tie-assessment-chennai" className="text-rose-700 underline hover:text-rose-900">
+              tongue tie feeding concerns
+            </a>
+            , and create practical next steps for your family.
+          </p>
+        </section>
+
+        <section className="mb-12">
+          <h2 className="mb-4 text-2xl font-bold text-gray-900">Why Online Support Can Help</h2>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <BenefitCard title="Your real environment" description="Guidance happens in the chair, room, and routine you actually use at home." />
+            <BenefitCard title="Less travel stress" description="You can get support without packing for a clinic visit or timing travel around feeds." />
+            <BenefitCard title="Visual feeding guidance" description="Video can support discussion of positioning, latch, pumping setup, and feeding behavior." />
+            <BenefitCard title="Clear next steps" description="You leave with practical actions and a sense of when in-person care may be needed." />
           </div>
         </section>
 
         <section className="mb-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Why Online Lactation Consulting Works</h2>
-          <div className="grid gap-4 sm:grid-cols-2 mb-6">
-            <BenefitCard title="Your real environment" description="We watch you feed your baby in your actual chair, your usual position — more realistic than a clinical setting where everything feels unfamiliar." />
-            <BenefitCard title="No travel stress" description="No packing a diaper bag, driving through traffic, or timing the visit between feeds. For a sleep-deprived new mother, that matters." />
-            <BenefitCard title="Full visual assessment" description="We can see latch, positioning, and baby's oral movement on video. If we spot tongue tie indicators, we guide you on what to look for." />
-            <BenefitCard title="Written follow-up plan" description="Every session includes a written follow-up plan emailed to you afterward, so you're never relying on memory alone." />
+          <h2 className="mb-6 text-2xl font-bold text-gray-900">What We Cover</h2>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <ServiceLink title="Latch and positioning support" href="/lactation-consultant-chennai" />
+            <ServiceLink title="Low milk supply concerns" href="/low-milk-supply-help-chennai" />
+            <ServiceLink title="Tongue tie feeding questions" href="/tongue-tie-assessment-chennai" />
+            <ServiceLink title="Request an online consultation" href="/book-consultation" />
           </div>
         </section>
 
         <section className="mb-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">What We Cover in an Online Session</h2>
-          <div className="space-y-4">
-            <SessionItem title="Full Feeding Observation" description="We watch your baby feed from start to finish — latch depth, sucking pattern, swallowing sounds, and positioning from multiple angles." />
-            <SessionItem title="Milk Supply Assessment" description="We review your baby's weight gain pattern, diaper output, feeding frequency, and look for signs of true vs. perceived low supply." />
-            <SessionItem title="Oral Assessment Guidance" description="While we can't perform a hands-on tongue tie exam over video, we guide you through visual indicators and refer to specialists in your city if needed." />
-            <SessionItem title="Pumping & Bottle-Feeding Support" description="For mothers returning to work or exclusively pumping — we build a schedule, troubleshoot pump flange fit, and optimize your output." />
-            <SessionItem title="Personalized Action Plan" description="Every session ends with a clear, written plan covering feeding positions, frequency, supplementation (if needed), and follow-up milestones." />
-          </div>
-        </section>
-
-        <section className="mb-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Who This Is For</h2>
-          <ul className="space-y-3 text-gray-700">
-            <ListItem text="Mothers in cities without IBCLC-certified consultants (most of India)" />
-            <ListItem text="NRI and expat mothers who want consultation in their language" />
-            <ListItem text="Mothers on bed rest or recovering from C-section" />
-            <ListItem text="Working mothers who can't take time off for in-person visits" />
-            <ListItem text="Mothers in joint families who need evidence-based guidance to share with family members" />
-          </ul>
-        </section>
-
-        <section className="mb-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
+          <h2 className="mb-6 text-2xl font-bold text-gray-900">Frequently Asked Questions</h2>
           <div className="space-y-6">
-            <FAQ question="Is an online lactation consultation as effective as in-person?" answer="For most breastfeeding issues — yes. Studies show that telehealth lactation support achieves comparable outcomes to in-person visits for latch correction, supply management, and feeding plans." />
-            <FAQ question="What do I need for the session?" answer="A phone or laptop with a working camera, a quiet space, and your baby ready for a feed. We'll guide you through everything else." />
-            <FAQ question="How long is a session?" answer="45–60 minutes for a full initial consultation. Follow-ups are 20–30 minutes." />
-            <FAQ question="Can you help if I'm exclusively pumping?" answer="Absolutely. We help with pump selection, flange fitting, pumping schedules, and maintaining or increasing supply when exclusively pumping." />
+            {FAQ_ITEMS.map((item) => (
+              <FAQ key={item.question} question={item.question} answer={item.answer} />
+            ))}
           </div>
         </section>
 
-        <section className="bg-rose-50 border border-rose-200 rounded-xl p-8 text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-3">Book Your Online Consultation</h2>
-          <p className="text-gray-700 mb-6 max-w-xl mx-auto">IBCLC-certified breastfeeding support, available from anywhere in India. No travel, no waiting — just expert help when you need it.</p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <a href="tel:+917338890927" className="inline-flex items-center justify-center px-6 py-3 bg-rose-700 text-white font-semibold rounded-lg hover:bg-rose-800 transition-colors">Call to Book</a>
-            <a href="https://wa.me/917338890927" className="inline-flex items-center justify-center px-6 py-3 border-2 border-rose-700 text-rose-700 font-semibold rounded-lg hover:bg-rose-50 transition-colors">WhatsApp Us</a>
-          </div>
-        </section>
-      </main>
+        <BottomCta
+          heading="Book Your Online Consultation"
+          description="Get lactation support from home, with clear guidance on what can be handled online and when in-person assessment is better."
+        />
+      </SeoPageShell>
 
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
-        "@context": "https://schema.org", "@type": "FAQPage",
-        mainEntity: [
-          { "@type": "Question", name: "Is an online lactation consultation as effective as in-person?", acceptedAnswer: { "@type": "Answer", text: "For most breastfeeding issues — yes. Studies show that telehealth lactation support achieves comparable outcomes to in-person visits." } },
-          { "@type": "Question", name: "How long is an online lactation session?", acceptedAnswer: { "@type": "Answer", text: "45–60 minutes for a full initial consultation. Follow-ups are 20–30 minutes." } },
-        ],
-      }) }} />
+      <FaqSchema items={FAQ_ITEMS} path={PAGE_PATH} />
     </>
   )
 }
 
 function BenefitCard({ title, description }) {
-  return (<div className="bg-white border border-gray-200 rounded-lg p-5"><h3 className="font-semibold text-gray-900 mb-2">{title}</h3><p className="text-gray-600 text-sm leading-relaxed">{description}</p></div>)
-}
-function SessionItem({ title, description }) {
-  return (<div className="flex gap-3 items-start"><div className="w-2 h-2 rounded-full bg-rose-700 mt-2.5 flex-shrink-0" /><div><h3 className="font-semibold text-gray-900">{title}</h3><p className="text-gray-600 text-sm leading-relaxed">{description}</p></div></div>)
-}
-function ListItem({ text }) {
-  return (<li className="flex gap-3 items-start"><span className="text-rose-700 mt-0.5">✓</span><span>{text}</span></li>)
-}
-function FAQ({ question, answer }) {
-  return (<details className="group border-b border-gray-200 pb-4"><summary className="cursor-pointer font-semibold text-gray-900 group-open:text-rose-700 list-none flex justify-between items-center">{question}<span className="text-gray-400 group-open:rotate-45 transition-transform text-xl">+</span></summary><p className="text-gray-600 mt-3 leading-relaxed">{answer}</p></details>)
+  return (
+    <div className="rounded-lg border border-gray-200 bg-white p-5">
+      <h3 className="mb-2 font-semibold text-gray-900">{title}</h3>
+      <p className="text-sm leading-relaxed text-gray-600">{description}</p>
+    </div>
+  )
 }

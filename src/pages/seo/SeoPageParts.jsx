@@ -1,6 +1,7 @@
 import Header from "../../components/Header"
 import Footer from "../../components/Footer"
 import FloatingWhatsApp from "../../components/FloatingWhatsApp"
+import { FaqStructuredData, PageStructuredData, ServiceStructuredData, SiteStructuredData } from "../../components/StructuredData"
 
 // Shared layout shell for standalone SEO landing pages (service pages, neighborhood
 // pages). Keeps the site's real navigation/footer/WhatsApp button around content
@@ -8,6 +9,7 @@ import FloatingWhatsApp from "../../components/FloatingWhatsApp"
 export function SeoPageShell({ children }) {
   return (
     <>
+      <SiteStructuredData />
       <Header />
       <main className="pt-[72px]">
         <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">{children}</div>
@@ -63,7 +65,7 @@ export function ReviewCard({ quote, name, area }) {
 export function FAQ({ question, answer }) {
   return (
     <details className="group border-b border-gray-200 pb-4">
-      <summary className="flex list-none items-center justify-between font-semibold text-gray-900 group-open:text-rose-700">
+      <summary className="flex list-none items-center justify-between font-semibold text-gray-900 outline-none group-open:text-rose-700 focus-visible:ring-4 focus-visible:ring-rose-100">
         {question}
         <span className="text-xl text-gray-400 transition-transform group-open:rotate-45">+</span>
       </summary>
@@ -72,25 +74,33 @@ export function FAQ({ question, answer }) {
   )
 }
 
-export function FaqSchema({ items }) {
+export function FaqSchema({ items, path }) {
+  return <FaqStructuredData items={items} path={path} />
+}
+
+export function SeoPageSchema({ path, name, description, serviceName, areaServed }) {
+  const breadcrumbs = [
+    { name: "Home", path: "/" },
+    { name, path },
+  ]
+
   return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{
-        __html: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "FAQPage",
-          mainEntity: items.map((item) => ({
-            "@type": "Question",
-            name: item.question,
-            acceptedAnswer: {
-              "@type": "Answer",
-              text: item.answer,
-            },
-          })),
-        }),
-      }}
-    />
+    <>
+      <PageStructuredData
+        path={path}
+        name={name}
+        description={description}
+        breadcrumbs={breadcrumbs}
+      />
+      {serviceName ? (
+        <ServiceStructuredData
+          path={path}
+          name={serviceName}
+          description={description}
+          areaServed={areaServed}
+        />
+      ) : null}
+    </>
   )
 }
 
